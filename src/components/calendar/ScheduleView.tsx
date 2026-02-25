@@ -1,7 +1,7 @@
 'use client';
 
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/db';
+import { db, type CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { Clock, Calendar as CalIcon } from 'lucide-react';
 

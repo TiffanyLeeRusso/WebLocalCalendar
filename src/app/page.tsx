@@ -11,7 +11,7 @@ import { Plus, Settings as SettingsIcon, Calendar as CalendarIcon } from 'lucide
 
 // For testing
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/db';
+import { db, type CalendarItem } from '@/lib/db';
 // \For testing
 
 export default function Home() {

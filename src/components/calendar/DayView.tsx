@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, CalendarItem } from '@/lib/db';
+import { db, type CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
 
 const HOUR_HEIGHT = 60;
