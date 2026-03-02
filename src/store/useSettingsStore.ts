@@ -37,7 +37,7 @@ export const useSettingsStore = create<SettingsState>()(
 
       currentView: 'schedule',
       focusDate: Date.now(),
-      isSidebarOpen: true,
+      isSidebarOpen: false,
 
       setCurrentView: (currentView) => set({ currentView }),
       setFocusDate: (focusDate) => set({ focusDate }),

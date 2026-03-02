@@ -1,124 +1,302 @@
 'use client';
 
-import React, { useState } from 'react';
-import { db, CalendarItem } from '@/lib/db';
-import { X, Save, Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CalendarItem, db } from '@/lib/db';
+import { X, Clock } from 'lucide-react';
+import { EVENT_COLORS } from '@/lib/utils';
 
 interface EventFormProps {
-  initialData?: Partial<CalendarItem>;
-  mode: 'add' | 'edit' | 'preview';
+  initialData?: CalendarItem;
+  mode: 'add' | 'edit';
   onClose: () => void;
 }
 
 export default function EventForm({ initialData, mode, onClose }: EventFormProps) {
-  const isPreview = mode === 'preview';
+  // Helper: Format Date for input[type="date"]
+  const formatDate = (ms: number) => new Date(ms).toISOString().split('T')[0];
+  // Helper: Format Time for input[type="time"]
+  const formatTime = (ms: number) => new Date(ms).toTimeString().slice(0, 5);
+
+    
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [note, setNote] = useState(initialData?.note || '');
+  const [isAllDay, setIsAllDay] = useState(initialData?.allDay || false);
+  const [selectedColor, setSelectedColor] = useState(initialData?.color || 'blue');
   
-  const [formData, setFormData] = useState({
-    title: initialData?.title || '',
-    note: initialData?.note || '',
-    startMs: initialData?.startMs || Date.now(),
-    endMs: initialData?.endMs || Date.now() + 3600000, // +1hr
-    allDay: initialData?.allDay || false,
+  // Date/Time States
+  const [startDate, setStartDate] = useState(formatDate(initialData?.startMs || Date.now()));
+  const [startTime, setStartTime] = useState(formatTime(initialData?.startMs || Date.now()));
+  const [endDate, setEndDate] = useState(formatDate(initialData?.endMs || (Date.now() + 3600000)));
+  const [endTime, setEndTime] = useState(formatTime(initialData?.endMs || (Date.now() + 3600000)));
+
+  // Reminders
+  const [hasReminder, setHasReminder] = useState(!!initialData?.reminders?.length);
+  const [reminderType, setReminderType] = useState(() => {
+    const offset = initialData?.reminders?.[0]?.offsetSeconds;
+    if (offset === 600) return "10 minutes before";
+    if (offset === 3600) return "1 hour before";
+    if (offset === 86400) return "1 day before";
+    return "At time";
   });
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isPreview) return;
+  // Repeat
+  const [isRepeating, setIsRepeating] = useState(!!initialData?.repeat);
+  const [repeatValue, setRepeatValue] = useState(initialData?.repeat?.interval || 1);
+  const [repeatUnit, setRepeatUnit] = useState(() => {
+    const unit = initialData?.repeat?.unit || 'day';
+    // Capitalize and add 's' to match your UI dropdown: 'day' -> 'Days'
+    return unit.charAt(0).toUpperCase() + unit.slice(1) + 's';
+  });
+  const [repeatUntilType, setRepeatUntilType] = useState(initialData?.repeat?.until ? 'date' : 'forever');
+  const [repeatUntilDate, setRepeatUntilDate] = useState(
+    initialData?.repeat?.until ? formatDate(initialData.repeat.until) : formatDate(Date.now() + 31536000000)
+  );
 
-    const event: CalendarItem = {
-      id: initialData?.id || crypto.randomUUID(),
+  const handleNow = () => {
+    const now = new Date();
+    setStartDate(formatDate(now.getTime()));
+    setStartTime(formatTime(now.getTime()));
+    // Set end time to 1 hour from now
+    const later = new Date(now.getTime() + 3600000);
+    setEndDate(formatDate(later.getTime()));
+    setEndTime(formatTime(later.getTime()));
+  };
+
+  const handleSave = async () => {
+    const startMs = new Date(`${startDate}T${startTime}`).getTime();
+    const endMs = new Date(`${endDate}T${endTime}`).getTime();
+
+    if (isNaN(startMs) || isNaN(endMs)) {
+      alert("Invalid Date/Time");
+      return;
+    }
+
+    if (endMs < startMs) {
+      alert("End time cannot be before start time!");
+      return;
+    }
+
+    const getOffset = (type: string) => {
+          switch(type) {
+              case "10 minutes before": return 600;
+              case "1 hour before": return 3600;
+              case "1 day before": return 86400;
+              default: return 0; // "At time"
+          }
+    };
+
+    // Determine the correct ID for this event. New event? Existing event? "Ghost" of a recurring event?
+    let targetId: string;
+  
+    if (mode === 'edit' && initialData?.id) {
+      // If it's a "ghost" occurrence, strip the suffix to get the real DB ID
+      // Example: "uuid-123-occ-171456" -> "uuid-123"
+      targetId = initialData.id.split('-occ-')[0];
+    } else {
+      // Brand new event gets a brand new UUID
+      targetId = crypto.randomUUID();
+    }
+
+    const eventData: CalendarItem = {
+      id: targetId,
       type: 'event',
-      title: formData.title || 'Untitled Event',
-      note: formData.note,
-      startMs: formData.startMs,
-      endMs: formData.endMs,
-      allDay: formData.allDay,
+      title: title || '(No Title)',
+      note,
+      allDay: isAllDay,
+      startMs,
+      endMs,
       createdAt: initialData?.createdAt || Date.now(),
       updatedAt: Date.now(),
+      color: selectedColor,
+      repeat: isRepeating ? {
+          interval: repeatValue,
+          unit: repeatUnit.toLowerCase().replace(/s$/, '') as 'day' | 'week' | 'month' | 'year',
+          until: repeatUntilType === 'date' ? new Date(`${repeatUntilDate}T23:59:59`).getTime() : undefined
+      } : undefined,
+      reminders: hasReminder ? [{ offsetSeconds: getOffset(reminderType) }] : []
     };
 
     try {
-      await db.events.put(event); // .put handles both add and update
+      // dexie.put handles both "add" and "update" if the ID matches
+      await db.events.put(eventData);
       onClose();
     } catch (err) {
-      console.error("Failed to save event:", err);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!initialData?.id) return;
-
-    if (confirm("Are you sure you want to delete this event?")) {
-        try {
-            await db.events.delete(initialData.id);
-            onClose();
-        } catch (err) {
-            console.error("Delete failed:", err);
-        }
+      console.error("Save Error:", err);
+      alert("Database Error: Check console.");
     }
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 z-50 p-6 flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold capitalize">{mode} Event</h2>
-        <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 shadow-xl border-l border-slate-200 dark:border-slate-800">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
+        <h2 className="font-black uppercase tracking-tight text-lg">{mode} Event</h2>
+        <button onClick={onClose} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full">
           <X size={20} />
         </button>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-4 flex-1">
-        <div>
-          <label htmlFor="event-title" className="block text-sm font-medium mb-1">Title</label>
-          <input id="event-title"
-                 disabled={isPreview}
-                 type="text"
-                 className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700"
-                 value={formData.title}
-                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                 placeholder="My event name.."
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {/* Basic Info */}
+        <div className="space-y-2">
+          <input 
+            className="w-full text-xl font-bold bg-transparent border-b-2 border-slate-200 focus:border-blue-500 outline-none pb-1"
+            placeholder="Event Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <textarea 
+            className="w-full bg-slate-50 dark:bg-slate-800 p-2 rounded text-sm min-h-[80px] outline-none"
+            placeholder="Add notes..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Note</label>
-          <textarea
-            disabled={isPreview}
-            className="w-full p-2 border rounded h-24 dark:bg-slate-800 dark:border-slate-700"
-            value={formData.note}
-            onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            id="allDay"
-            type="checkbox"
-            disabled={isPreview}
-            checked={formData.allDay}
-            onChange={(e) => setFormData({ ...formData, allDay: e.target.checked })}
-          />
-          <label htmlFor="allDay" className="text-sm">All Day Event</label>
-        </div>
-
-        {!isPreview && (
-          <div className="flex flex-col gap-2 mt-auto pt-6">
-            <button type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
-                <Save size={18} />
-                {mode === 'edit' ? 'Save Changes' : 'Create Event'}
+        {/* Timing Controls */}
+        <div className="space-y-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+          <div className="flex items-center justify-between">
+            <button onClick={handleNow} className="flex items-center gap-2 text-xs font-black uppercase bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700">
+              <Clock size={14} /> Set Now
             </button>
-
-            {mode === 'edit' && (
-                <button type="button"
-                onClick={handleDelete}
-                className="w-full bg-transparent hover:bg-red-50 cursor-pointer dark:hover:bg-red-950/30 text-red-500 text-sm font-medium py-2 rounded-lg transition-colors">
-                    Delete Event
-                </button>
-            )}
+            <label className="flex items-center gap-2 text-xs font-bold uppercase hover:cursor-pointer">
+              All Day
+              <input type="checkbox" checked={isAllDay} onChange={(e) => setIsAllDay(e.target.checked)} className="w-4 h-4" />
+            </label>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Start</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />
+              {!isAllDay && <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />}
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">End</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />
+              {!isAllDay && <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />}
+            </div>
+          </div>
+        </div>
+
+        {/* Color picker */}
+        <div className="space-y-2">
+          <label className="block text-[10px] font-black uppercase text-slate-500">Event Color</label>
+          <div className="flex gap-4">
+          {EVENT_COLORS.map((color) => (
+              <button
+              key={color.name}
+              onClick={() => setSelectedColor(color.name)}
+              className={`w-8 h-8 rounded-full transition-all transform hover:cursor-pointer
+                         ${color.bg} 
+                         ${selectedColor === color.name ? 'ring-4 ring-offset-2 ring-slate-300 dark:ring-slate-600 scale-110' : 'opacity-70'}`}
+              title={color.name}
+                  />
+          ))}
+          </div>
+        </div>
+
+        {/* Reminders */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 font-bold text-sm hover:cursor-pointer">
+            <input type="checkbox" checked={hasReminder} onChange={(e) => setHasReminder(e.target.checked)} className="w-4 h-4" />
+            Add Reminder
+          </label>
+          {hasReminder && (
+            <select 
+              value={reminderType} 
+              onChange={(e) => setReminderType(e.target.value)}
+              className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-sm"
+            >
+              {["At time", "10 minutes before", "1 hour before", "1 day before"].map(opt => <option key={opt}>{opt}</option>)}
+            </select>
+          )}
+        </div>
+
+        {/* Repeat Logic */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 font-bold text-sm hover:cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={isRepeating} 
+              onChange={(e) => setIsRepeating(e.target.checked)} 
+              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" 
+            />
+            <span >Repeat Event</span>
+          </label>
+
+          {isRepeating && (
+          <div className="space-y-4 bg-slate-50 dark:bg-slate-800/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Frequency Row */}
+            <div className="flex gap-2 items-center">
+              <span className="text-xs font-black uppercase text-slate-400">Every</span>
+              <input 
+                type="number" 
+                value={repeatValue} 
+                onChange={(e) => setRepeatValue(Number(e.target.value))} 
+              className="w-16 p-2 text-sm font-bold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none" 
+              min="1" 
+              />
+              <select 
+                value={repeatUnit} 
+                onChange={(e) => setRepeatUnit(e.target.value)} 
+                className="flex-1 p-2 text-sm font-bold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                {["Days", "Weeks", "Months", "Years"].map(unit => <option key={unit}>{unit}</option>)}
+              </select>
+            </div>
+
+            {/* Until Logic */}
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2">Repeat Until</label>
+              <div className="flex flex-col gap-3">
+                {/* Forever vs Date Toggles */}
+                <div className="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-lg">
+                  <button 
+                    onClick={() => setRepeatUntilType('forever')}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${repeatUntilType === 'forever' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-500'}`}
+                    >
+                    Forever
+                  </button>
+                  <button 
+                    onClick={() => setRepeatUntilType('date')}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${repeatUntilType === 'date' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-500'}`}
+                    >
+                    Specific Date
+                  </button>
+                </div>
+
+                {/* Date Picker (Hidden if Forever) */}
+                {repeatUntilType === 'date' && (
+                <input 
+                  type="date" 
+                  value={repeatUntilDate} 
+                  onChange={(e) => setRepeatUntilDate(e.target.value)} 
+                className="w-full p-2 text-sm font-bold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none animate-in zoom-in-95 duration-150" 
+                />
+                )}
+              </div>
+            </div>
+          </div>
+          )}
+        </div>
+      </div>
+
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex gap-2">
+        {mode === 'edit' && (
+          <button 
+            onClick={async () => { if(confirm('Delete?')) { await db.events.delete(initialData!.id!); onClose(); }}}
+            className="px-4 py-2 text-red-600 font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          >
+            Delete
+          </button>
         )}
-      </form>
+        <button 
+          onClick={handleSave}
+          className="flex-1 bg-blue-600 text-white font-black uppercase tracking-widest py-3 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+        >
+          Save Event
+        </button>
+      </div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     if (currentView === 'month') return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
     if (currentView === 'schedule') return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
     if (currentView === 'day') return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-    return 'test';
+    return '';
   };
 
   const handleAdjustDate = (offset: number) => {
@@ -23,13 +23,13 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     setFocusDate(newDate.getTime());
   };
 
-    return (
+  return (
 <header className="py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 flex flex-col items-center gap-4">
   
   {/* Top Row: Navigation & View Title */}
   <div className="w-full max-w-4xl px-4 flex items-center">
     <div className="w-32 flex justify-start"> {/* Increased width for larger buttons */}
-      <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-slate-100 cursor-pointer dark:hover:bg-slate-800 rounded-md">
+      <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded-md">
         <Menu size={30} />
       </button>
     </div>
@@ -39,7 +39,7 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     </h1>
 
     <div className="w-32 flex justify-end">
-      <button onClick={onAddEvent} className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 cursor-pointer shadow-lg active:scale-95 transition-transform">
+      <button onClick={onAddEvent} className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 hover:cursor-pointer shadow-lg active:scale-95 transition-transform">
         <Plus size={30} />
       </button>
     </div>
@@ -50,7 +50,7 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     
     {/* Left: Previous Button */}
     <div className="flex justify-start">
-      <button onClick={() => handleAdjustDate(-1)} className="p-2 hover:bg-slate-100 cursor-pointer dark:hover:bg-slate-800 rounded">
+      <button onClick={() => handleAdjustDate(-1)} className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded">
         <ChevronLeft size={30} />
       </button>
     </div>
@@ -63,7 +63,7 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
       {currentView !== 'settings' && currentView !== 'schedule' && (
       <button 
         onClick={() => setFocusDate(Date.now())} 
-        className="px-3 py-0.5 text-[10px] font-black uppercase border-2 border-blue-200 dark:border-slate-700 rounded-full hover:bg-blue-50 cursor-pointer dark:hover:bg-slate-800 transition-colors"
+        className="px-3 py-0.5 text-[10px] font-black uppercase border-2 border-blue-200 dark:border-slate-700 rounded-full hover:bg-blue-50 hover:cursor-pointer dark:hover:bg-slate-800 transition-colors"
         >
         Today
       </button>
@@ -72,7 +72,7 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
 
     {/* Right: Next Button */}
     <div className="flex justify-end">
-      <button onClick={() => handleAdjustDate(1)} className="p-2 hover:bg-slate-100 cursor-pointer dark:hover:bg-slate-800 rounded">
+      <button onClick={() => handleAdjustDate(1)} className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded">
         <ChevronRight size={30} />
       </button>
     </div>

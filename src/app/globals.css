@@ -24,3 +24,35 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Scrollbar */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Big-text mode */
+
+.big-text-mode {
+  font-size: 1.25rem; /* Standard 16px becomes 20px */
+}
+
+.big-text-mode h1 { font-size: 2.5rem; }
+.big-text-mode h2 { font-size: 2rem; }
+.big-text-mode button { 
+  padding: 1rem 1.5rem !important; /* Larger hit areas */
+  font-weight: 800; 
+}
+
+/* Specific scaling for the Day View hours */
+.big-text-mode .hour-label {
+  font-size: 14px !important;
+  width: 100px !important; /* Give more space for larger text */
+}

@@ -3,6 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { getColorClass } from '@/lib/utils';
 import { Clock, Calendar as CalIcon } from 'lucide-react';
 
 interface ScheduleViewProps {
@@ -41,7 +42,9 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
         events.map((event) => (
           <div 
             key={event.id}
-            className="group p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-start justify-between"
+            className={`p-4 border rounded-xl shadow-sm
+                       ${getColorClass(event.color)}
+                       hover:shadow-md transition-shadow flex items-start justify-between`}
           >
             <div className="space-y-1">
               <h3 className="font-bold text-lg">{event.title}</h3>
@@ -63,9 +66,9 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
             </div>
 
             <button 
-            onClick={() => onEdit(event)}
-                className="bg-blue-100 hover:bg-sky-600 cursor-pointer p-2 dark:bg-blue-900 rounded font-medium text-sm"
-                >
+              onClick={() => onEdit(event)}
+              className="bg-blue-100 hover:bg-sky-600 hover:cursor-pointer p-2 dark:bg-blue-900 rounded font-medium text-sm"
+            >
               Edit
             </button>
           </div>

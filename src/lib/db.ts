@@ -19,6 +19,7 @@ export interface CalendarItem {
   startMs: number;      // Unix timestamp ms
   endMs: number;        // Unix timestamp ms
   allDay: boolean;
+  color?: string;
   
   // Optional relations (Nested for ease of local-first access)
   repeat?: RepeatRule;
