@@ -7,7 +7,7 @@ module.exports = {
   plugins: [],
 };
 
-const config: Config = {
+const config = {
   darkMode: 'class',
   content: [ ]
 };
