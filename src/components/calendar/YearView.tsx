@@ -25,9 +25,6 @@ export default function YearView() {
   return (
     <div className="w-full h-full p-4 md:p-8 overflow-y-auto bg-slate-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-black mb-8 text-slate-800 dark:text-slate-100 uppercase tracking-tighter">
-          {year}
-        </h2>
         
         {/* Responsive Grid: 1 col on mobile, 2 on tablet, 3 or 4 on desktop */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

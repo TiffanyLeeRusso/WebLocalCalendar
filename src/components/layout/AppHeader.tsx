@@ -25,21 +25,30 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
 
   return (
 <header className="py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 flex flex-col items-center gap-4">
-  
   {/* Top Row: Navigation & View Title */}
-  <div className="w-full max-w-4xl px-4 flex items-center">
-    <div className="w-32 flex justify-start"> {/* Increased width for larger buttons */}
-      <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded-md">
+  <div className="w-full max-w-4xl px-4 flex items-center justify-between">
+    
+    {/* Left Side: Dynamic width based on button */}
+    <div className="flex-1 flex justify-start">
+      <button 
+        onClick={() => setSidebarOpen(true)} 
+        className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded-md transition-colors"
+        >
         <Menu size={30} />
       </button>
     </div>
 
-    <h1 className="flex-1 text-center font-bold text-xl uppercase tracking-widest truncate">
+    {/* Center: Takes up all available space, no more squeezing */}
+    <h1 className="px-2 font-black text-xl sm:text-2xl uppercase tracking-[0.2em] truncate text-slate-800 dark:text-slate-100">
       {currentView}
     </h1>
 
-    <div className="w-32 flex justify-end">
-      <button onClick={onAddEvent} className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 hover:cursor-pointer shadow-lg active:scale-95 transition-transform">
+    {/* Right Side: Dynamic width based on button */}
+    <div className="flex-1 flex justify-end">
+      <button 
+        onClick={onAddEvent} 
+        className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 hover:cursor-pointer shadow-lg active:scale-95 transition-all"
+        >
         <Plus size={30} />
       </button>
     </div>

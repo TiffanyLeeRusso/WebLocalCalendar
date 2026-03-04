@@ -80,8 +80,8 @@ export default function DayView({ onEdit }: { onEdit: (event: CalendarItem) => v
     return `${h} ${hour < 12 ? 'AM' : 'PM'}`;
   };
 
-  return (
-    <div className="relative flex flex-col h-full bg-white dark:bg-slate-900 overflow-y-auto">
+    return (
+    <div className="max-w-3xl mx-auto space-y-4 relative flex flex-col h-full bg-white dark:bg-slate-900 overflow-y-auto">
       <div className="relative flex w-full" style={{ height: `${24 * HOUR_HEIGHT}px` }}>
         
           {/* Hour Labels */}
