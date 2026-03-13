@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { seedDatabase } from './seedData';
 
-// 1. Define the Interfaces (The TypeScript side)
+// Define the Interfaces (The TypeScript side)
 export interface RepeatRule {
   interval: number;
   unit: 'day' | 'week' | 'month' | 'year';
@@ -29,15 +30,19 @@ export interface CalendarItem {
   updatedAt: number;
 }
 
-// 2. Initialize the Database
+// Initialize the Database
 const db = new Dexie('LocalCalendarDB') as Dexie & {
   events: EntityTable<CalendarItem, 'id'>;
 };
 
-// 3. Define Schema (The IndexedDB side)
+// Define Schema (The IndexedDB side)
 // Syntax: 'primaryKey, index1, index2, index.nestedProperty'
 db.version(1).stores({
   events: 'id, type, startMs, endMs, title' 
+});
+
+db.on('ready', () => {
+  return seedDatabase();
 });
 
 export { db };

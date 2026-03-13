@@ -2,6 +2,7 @@
 
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
+import { getAppColor } from '@/lib/utils';
 import { useSettingsStore } from '@/store/useSettingsStore';
 
 export default function YearView() {
@@ -23,9 +24,9 @@ export default function YearView() {
   };
 
   return (
-    <div className="w-full h-full p-4 md:p-8 overflow-y-auto bg-slate-50 dark:bg-slate-950">
+    <div className="w-full h-full p-4 md:p-8 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Responsive Grid: 1 col on mobile, 2 on tablet, 3 or 4 on desktop */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {months.map((monthDate) => (
@@ -34,14 +35,14 @@ export default function YearView() {
               className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow hover:cursor-pointer"
               onClick={() => handleMonthClick(monthDate)}
             >
-              <h3 className="font-black text-blue-600 dark:text-blue-400 mb-4 uppercase text-sm tracking-widest">
+                  <h3 className={`font-black mb-4 uppercase text-sm tracking-widest ${getAppColor('TEXT_HIGHLIGHT')}`}>
                 {monthDate.toLocaleString('default', { month: 'long' })}
               </h3>
 
               <div className="grid grid-cols-7 gap-1">
                 {/* Simplified Day Headers */}
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                  <div key={i} className="text-[10px] font-bold text-slate-300 dark:text-slate-700 text-center">
+                  <div key={i} className={`text-[15px] font-bold text-center ${getAppColor('TEXT')}`}>
                     {d}
                   </div>
                 ))}
@@ -80,9 +81,9 @@ function renderMiniGrid(monthDate: Date, events: any[]) {
       <div 
         key={d} 
         className={`
-          aspect-square flex items-center justify-center text-[10px] rounded-full font-bold
-          ${hasEvents ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300' : 'text-slate-400'}
-          ${isToday ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-900' : ''}
+          aspect-square flex items-center justify-center text-[15px] rounded-full font-bold
+          ${hasEvents ? 'bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-blue-50' : getAppColor('TEXT_SECONDARY')}
+          ${isToday ? 'ring-2 ring-blue-700 dark:ring-blue-200 ' : ''}
         `}
       >
         {d}

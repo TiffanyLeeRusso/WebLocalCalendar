@@ -3,7 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { getColorClass } from '@/lib/utils';
+import { getAppColor, getEventColorClass } from '@/lib/utils';
 import { Clock, Calendar as CalIcon } from 'lucide-react';
 
 interface ScheduleViewProps {
@@ -29,13 +29,13 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
   if (!events) return <div className="p-8 text-center">Loading schedule...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
+    <div className="max-w-3xl mx-auto space-y-4 mt-10 mb-10">
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Clock className="text-blue-500" /> Upcoming Schedule
+        <Clock /> Upcoming Schedule
       </h2>
 
       {events.length === 0 ? (
-        <div className="p-12 border-2 border-dashed rounded-xl text-center text-slate-500">
+          <div className={`p-12 border-2 border-dashed rounded-xl text-center ${getAppcolor('TEXT')}`}>
           No events found. Add one to get started!
         </div>
       ) : (
@@ -43,17 +43,17 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
           <div 
             key={event.id}
             className={`p-4 border rounded-xl shadow-sm
-                       ${getColorClass(event.color)}
+                       ${getEventColorClass(event.color)}
                        hover:shadow-md transition-shadow flex items-start justify-between`}
           >
             <div className="space-y-1">
-              <h3 className="font-bold text-lg">{event.title}</h3>
+                <h3 className={`font-bold text-lg ${getAppColor('TEXT')}`}>{event.title}</h3>
               {event.note && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                  <p className={`text-sm line-clamp-2 ${getAppColor('TEXT_SECONDARY')}`}>
                   {event.note}
                 </p>
               )}
-              <div className="flex gap-4 mt-2 text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+              <div className="flex gap-4 mt-2 text-xs font-medium uppercase tracking-wider">
                 <span className="flex items-center gap-1">
                   <CalIcon size={12} />
                   {new Date(event.startMs).toLocaleDateString()}
@@ -67,7 +67,7 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
 
             <button 
               onClick={() => onEdit(event)}
-              className="bg-blue-100 hover:bg-sky-600 hover:cursor-pointer p-2 dark:bg-blue-900 rounded font-medium text-sm"
+              className={`p-2 rounded font-medium text-sm ${getAppColor('BUTTON')}`}
             >
               Edit
             </button>

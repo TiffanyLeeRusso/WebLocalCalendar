@@ -1,19 +1,27 @@
 import { db, CalendarItem } from './db';
 
 export async function seedDatabase() {
-  const count = await db.events.count();
-  if (count > 0) return; 
+  // Use a transaction to prevent race conditions
+  await db.transaction('rw', db.events, async () => {
+    const count = await db.events.count();
+    
+    if (count > 0) {
+      console.log("Database already contains data. Skipping seed.");
+      return;
+    }
 
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const date = now.getDate();
+    console.log("Seeding database with initial events...");
 
-  // Helper to create a specific time today
-  const getTimeToday = (hours: number, minutes: number = 0) => 
-    new Date(year, month, date, hours, minutes).getTime();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const date = now.getDate();
 
-  const seedEvents: CalendarItem[] = [
+    // Helper to create a specific time today
+    const getTimeToday = (hours: number, minutes: number = 0) => 
+      new Date(year, month, date, hours, minutes).getTime();
+
+    const seedEvents: CalendarItem[] = [
     {
       id: crypto.randomUUID(),
       type: 'event',
@@ -83,9 +91,9 @@ export async function seedDatabase() {
       color: 'rose',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    }
-  ];
+    } ];
 
-  await db.events.bulkAdd(seedEvents);
-  console.log("Database seeded with varied times.");
+    await db.events.bulkAdd(seedEvents);
+    console.log("Database seeded with varied times.");
+  });
 }

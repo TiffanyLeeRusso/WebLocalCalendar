@@ -1,27 +1,63 @@
 // src/lib/utils.ts
 
+export type AppColorKey = 'TEXT' | 'BG' | 'BORDER' | 'BUTTON' | 'HIGHLIGHT' | 'SECONDARY';
+
+const APP_COLORS: Record<AppColorKey, string> = {
+  TEXT: "text-slate-950 dark:text-slate-100",
+  BG: "bg-white dark:bg-slate-900",
+  BORDER: "border-slate-500 dark:border-slate-500",
+  BUTTON: "bg-blue-700 dark:bg-blue-900 text-white hover:bg-sky-600 dark:hover:bg-sky-700 hover:cursor-pointer transition-colors",
+  TEXT_SECONDARY: "text-slate-600 dark:text-slate-400",
+  TEXT_HIGHLIGHT: "text-blue-600 dark:text-blue-400"
+};
+
+export const getAppColor = (key: AppColorKey): string => {
+  return APP_COLORS[key] || "";
+};
+
+// We have to use the full Tailwind color-class names (with pseudo classes!)
+// in our code (instead of piecing them together in JS or JSX) or Tailwind will
+// not generate those classes in the stylesheet. Or we can use Tailwind's
+// 'safelist' in the config.
 export const EVENT_COLORS = [
-  { name: 'blue', bg: 'bg-blue-500', border: 'border-blue-600' },
-  { name: 'green', bg: 'bg-emerald-500', border: 'border-emerald-600' },
-  { name: 'amber', bg: 'bg-amber-500', border: 'border-amber-600' },
-  { name: 'rose', bg: 'bg-rose-500', border: 'border-rose-600' },
+    { NAME: 'transparent',
+      BG: '',
+      BORDER: '',
+      BORDER_HOVER: 'hover:border-t-slate-900 dark:hover:border-t-slate-300 hover:border-r-slate-900 dark:hover:border-r-slate-300 hover:border-b-slate-900 dark:hover:border-b-slate-300 hover:border-l-slate-900 dark:hover:border-l-slate-300',
+      BORDER_L: 'border-l-slate-900 dark:border-l-slate-300' },
+
+    { NAME: 'blue',
+      BG: 'bg-blue-200/30 dark:bg-blue-900/20',
+      BORDER: 'border-blue-800',
+      BORDER_HOVER: 'hover:border-t-blue-800 hover:border-r-blue-800 hover:border-b-blue-800 hover:border-l-blue-800',
+      BORDER_L: 'border-l-blue-800' },
+
+    { NAME: 'green',
+      BG: 'bg-emerald-200/30 dark:bg-emerald-900/20',
+      BORDER: 'border-emerald-800',
+      BORDER_HOVER: 'hover:border-t-emerald-800 hover:border-r-emerald-800 hover:border-b-emerald-800 hover:border-l-emerald-800',
+      BORDER_L: 'border-l-emerald-800' },
+
+    { NAME: 'amber',
+      BG: 'bg-amber-200/30 dark:bg-amber-900/20',
+      BORDER: 'border-amber-800',
+      BORDER_HOVER: 'hover:border-t-amber-800 hover:border-r-amber-800 hover:border-b-amber-800 hover:border-l-amber-800',
+      BORDER_L: 'border-l-amber-800' },
+
+    { NAME: 'rose',
+      BG: 'bg-pink-300/30 dark:bg-pink-900/20',
+      BORDER: 'border-pink-800',
+      BORDER_HOVER: 'hover:border-t-pink-800 hover:border-r-pink-800 hover:border-b-pink-800 hover:border-l-pink-800',
+      BORDER_L: 'border-l-pink-800' },
 ];
 
-/**
- * getColorClass
- * Maps a color name to specific Tailwind CSS classes for consistent styling.
- * Returns a string of classes for background, text, and border.
- */
-export const getColorClass = (colorName?: string) => {
-  switch (colorName?.toLowerCase()) {
-    case 'green':
-      return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-600';
-    case 'amber':
-      return 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-600';
-    case 'rose':
-      return 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border-rose-600';
-    case 'blue':
-    default:
-      return 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-600';
-  }
+export const findEventColorClass = (colorName?: string) => {
+    return EVENT_COLORS.find(c => c.NAME === colorName?.toLowerCase()) || EVENT_COLORS[0];
+}
+
+export const getEventColorClass = (colorName?: string,
+                                   part?: 'BG'|'BORDER'|'BORDER_T'|'BORDER_R'|'BORDER_B'|'BORDER_L') => {
+    const color = findEventColorClass(colorName);
+    return part ? color[part] : `${color.BG} ${color.BORDER}`;
 };
+

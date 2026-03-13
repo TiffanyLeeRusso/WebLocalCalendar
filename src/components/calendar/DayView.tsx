@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { expandEvents } from '@/lib/recurrence';
-import { getColorClass } from '@/lib/utils';
+import { getAppColor, getEventColorClass } from '@/lib/utils';
 
 const HOUR_HEIGHT = 60;
 
@@ -81,14 +81,16 @@ export default function DayView({ onEdit }: { onEdit: (event: CalendarItem) => v
   };
 
     return (
-    <div className="max-w-3xl mx-auto space-y-4 relative flex flex-col h-full bg-white dark:bg-slate-900 overflow-y-auto">
+    <div className={`max-w-3xl mx-auto space-y-4 relative flex flex-col h-full overflow-y-auto custom-scrollbar
+                     ${getAppColor('BG')}`}>
       <div className="relative flex w-full" style={{ height: `${24 * HOUR_HEIGHT}px` }}>
         
-          {/* Hour Labels */}
-          <div className={`flex-none border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50
-                           ${bigText ? 'w-24' : 'w-20'}`}>
+        {/* Hour Labels */}
+        <div className={`flex-none border-r
+                         ${getAppColor('BORDER')} bg-slate-100 dark:bg-slate-950/50
+                         ${bigText ? 'w-24' : 'w-20'}`}>
           {Array.from({ length: 24 }).map((_, i) => (
-             <div key={i} className="h-[60px] text-right pr-3 pt-1 text-slate-400 font-bold tabular-nums hour-label">
+              <div key={i} className={`h-[60px] text-right pr-3 pt-1 font-bold tabular-nums hour-label ${getAppColor('TEXT')}`}>
                 {formatHour(i)}
             </div>
           ))}
@@ -98,18 +100,18 @@ export default function DayView({ onEdit }: { onEdit: (event: CalendarItem) => v
           <div className="flex-1 relative mr-4">
           {/* Horizontal Hour Lines (Solid) */}
           {Array.from({ length: 24 }).map((_, i) => (
-            <div key={`hour-${i}`} 
-              className="absolute w-full border-b border-slate-200 dark:border-slate-800" 
-              style={{ top: `${i * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
-                  />
+          <div key={`hour-${i}`} 
+               className={`absolute w-full border-b ${getAppColor('BORDER')}`} 
+               style={{ top: `${i * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
+          />
           ))}
 
           {/* Half-Hour Lines (Dashed) */}
           {Array.from({ length: 24 }).map((_, i) => (
-            <div key={`half-hour-${i}`} 
-              className="absolute w-full border-b border-dashed border-slate-200 dark:border-slate-800" 
-              style={{ top: `${(i * HOUR_HEIGHT) + (HOUR_HEIGHT / 2)}px` }}
-                  />
+          <div key={`half-hour-${i}`} 
+               className={`absolute w-full border-b border-dashed ${getAppColor('BORDER')}`} 
+               style={{ top: `${(i * HOUR_HEIGHT) + (HOUR_HEIGHT / 2)}px` }}
+          />
           ))}
 
           {/* Current Time Indicator */}
@@ -118,19 +120,19 @@ export default function DayView({ onEdit }: { onEdit: (event: CalendarItem) => v
                    style={{ top: `${nowTop}px` }} >
                 {/* Time and Triangle Label */}
                 <div className="absolute right-full mr-1 flex items-center">
-                  <span className="text-[10px] font-black text-fuchsia-700 whitespace-nowrap bg-white dark:bg-slate-900 px-1 rounded">
+                  <span className="text-[10px] font-black text-fuchsia-700 dark:text-purple-400 whitespace-nowrap bg-white dark:bg-slate-900 px-1 rounded">
                     {nowTimeString}
                   </span>
                   {/* Triangle pointing right */}
                   <div className="w-0 h-0 
                                   border-t-[6px] border-t-transparent 
-                                  border-l-[10px] border-l-fuchsia-700 
+                                  border-l-[10px] border-l-fuchsia-700 dark:border-l-purple-400
                                   border-b-[6px] border-b-transparent"
                   />
                 </div>
 
                 {/* The actual line */}
-                <div className="flex-1 border-t-2 border-fuchsia-700" />
+                <div className="flex-1 border-t-2 border-fuchsia-700 dark:border-purple-400" />
               </div>
           )}
 
@@ -157,8 +159,7 @@ export default function DayView({ onEdit }: { onEdit: (event: CalendarItem) => v
                 className={`absolute p-2 rounded-lg border-l-4
                            shadow-md text-left overflow-hidden transition-all
                            hover:brightness-110 hover:cursor-pointer z-10
-                           active:bg-blue-500
-                           ${getColorClass(event.color)}`}
+                           ${getEventColorClass(event.color)}`}
               >
                 <div className="text-xs font-black truncate">{event.title}</div>
                 {durationMinutes > 40 && (

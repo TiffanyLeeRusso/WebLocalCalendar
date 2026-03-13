@@ -7,28 +7,31 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   const { bigText, theme } = useSettingsStore();
   const [mounted, setMounted] = useState(false);
 
-  // This prevents "Hydration Mismatch" by waiting until the 
-  // component is mounted in the browser to apply settings.
+  // Wait for mount to ensure Zustand has hydrated from localStorage
   useEffect(() => {
     setMounted(true);
-    // Add/remove the .dark class to the root HTML element
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
+  }, []);
 
+  // Apply the class to the <html> tag
+  useEffect(() => {
+    if (!mounted) return;
+
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme, mounted]);
+
+  // Prevent the UI from "jumping" by not rendering 
+  // the theme-specific UI until we know what the theme is.
   if (!mounted) {
-    return <div className="antialiased text-base">{children}</div>;
+    return <div style={{ visibility: 'hidden' }}>{children}</div>;
   }
 
   return (
-    <div className={`
-      min-h-screen antialiased
-      ${theme === 'dark' ? 'dark bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}
-      ${bigText ? 'text-xl' : 'text-base'}
-    `}>
+    <div className={`min-h-screen ${bigText ? 'text-xl' : 'text-base'}`}>
       {children}
     </div>
   );

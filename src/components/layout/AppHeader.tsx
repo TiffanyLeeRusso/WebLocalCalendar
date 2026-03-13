@@ -1,6 +1,7 @@
 'use client';
 import { Menu, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { getAppColor } from '@/lib/utils';
 
 export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
   const { currentView, focusDate, setFocusDate, setSidebarOpen } = useSettingsStore();
@@ -24,7 +25,8 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
   };
 
   return (
-<header className="py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 flex flex-col items-center gap-4">
+  <header className={`py-3 border-b z-30 flex flex-col items-center gap-4
+                      ${getAppColor('BG')} ${getAppColor('BORDER')}`}>
   {/* Top Row: Navigation & View Title */}
   <div className="w-full max-w-4xl px-4 flex items-center justify-between">
     
@@ -32,14 +34,14 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     <div className="flex-1 flex justify-start">
       <button 
         onClick={() => setSidebarOpen(true)} 
-        className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded-md transition-colors"
-        >
+        className={`p-2 rounded-md ${getAppColor('BUTTON')}`}>
         <Menu size={30} />
       </button>
     </div>
 
-    {/* Center: Takes up all available space, no more squeezing */}
-    <h1 className="px-2 font-black text-xl sm:text-2xl uppercase tracking-[0.2em] truncate text-slate-800 dark:text-slate-100">
+    {/* Center: Takes up all available space */}
+    <h1 className={`px-2 font-black text-xl sm:text-2xl uppercase tracking-[0.2em] truncate
+                   ${getAppColor('TEXT')}`}>
       {currentView}
     </h1>
 
@@ -47,7 +49,8 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     <div className="flex-1 flex justify-end">
       <button 
         onClick={onAddEvent} 
-        className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 hover:cursor-pointer shadow-lg active:scale-95 transition-all"
+        className={`p-3 rounded-full shadow-lg transition-all
+                    ${getAppColor('BUTTON')}`}
         >
         <Plus size={30} />
       </button>
@@ -59,7 +62,8 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     
     {/* Left: Previous Button */}
     <div className="flex justify-start">
-      <button onClick={() => handleAdjustDate(-1)} className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded">
+      <button onClick={() => handleAdjustDate(-1)}
+              className="p-2 rounded hover:bg-slate-200 hover:cursor-pointer dark:hover:bg-slate-700">
         <ChevronLeft size={30} />
       </button>
     </div>
@@ -72,7 +76,8 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
       {currentView !== 'settings' && currentView !== 'schedule' && (
       <button 
         onClick={() => setFocusDate(Date.now())} 
-        className="px-3 py-0.5 text-[10px] font-black uppercase border-2 border-blue-200 dark:border-slate-700 rounded-full hover:bg-blue-50 hover:cursor-pointer dark:hover:bg-slate-800 transition-colors"
+          className={`px-3 py-0.5 text-[12px] font-black uppercase transition-colors rounded-full
+                      ${getAppColor('BUTTON')}`}
         >
         Today
       </button>
@@ -81,7 +86,9 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
 
     {/* Right: Next Button */}
     <div className="flex justify-end">
-      <button onClick={() => handleAdjustDate(1)} className="p-2 hover:bg-slate-100 hover:cursor-pointer dark:hover:bg-slate-800 rounded">
+      <button onClick={() => handleAdjustDate(1)}
+              className={`p-2 hover:cursor-pointer rounded
+                          hover:bg-slate-200 dark:hover:bg-slate-700`}>
         <ChevronRight size={30} />
       </button>
     </div>

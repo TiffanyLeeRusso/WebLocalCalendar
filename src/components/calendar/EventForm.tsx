@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CalendarItem, db } from '@/lib/db';
 import { X, Clock } from 'lucide-react';
-import { EVENT_COLORS } from '@/lib/utils';
+import { EVENT_COLORS, getAppColor, getEventColorClass } from '@/lib/utils';
 
 interface EventFormProps {
   initialData?: CalendarItem;
@@ -21,8 +21,8 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
   const [title, setTitle] = useState(initialData?.title || '');
   const [note, setNote] = useState(initialData?.note || '');
   const [isAllDay, setIsAllDay] = useState(initialData?.allDay || false);
-  const [selectedColor, setSelectedColor] = useState(initialData?.color || 'blue');
-  
+  const [selectedColor, setSelectedColor] = useState(initialData?.color || 'transparent');
+
   // Date/Time States
   const [startDate, setStartDate] = useState(formatDate(initialData?.startMs || Date.now()));
   const [startTime, setStartTime] = useState(formatTime(initialData?.startMs || Date.now()));
@@ -135,17 +135,18 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
         {/* Basic Info */}
         <div className="space-y-2">
           <input 
-            className="w-full text-xl font-bold bg-transparent border-b-2 border-slate-200 focus:border-blue-500 outline-none pb-1"
+            className={`w-full text-xl font-bold bg-transparent border-b-2 border-slate-200 focus:border-blue-500 outline-none pb-1`}
             placeholder="Event Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <textarea 
-            className="w-full bg-slate-50 dark:bg-slate-800 p-2 rounded text-sm min-h-[80px] outline-none"
+            className={`w-full p-2 rounded text-sm min-h-[80px] outline-none
+                        bg-slate-50 dark:bg-slate-800`}
             placeholder="Add notes..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -153,9 +154,9 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
         </div>
 
         {/* Timing Controls */}
-        <div className="space-y-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+        <div className="space-y-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
           <div className="flex items-center justify-between">
-            <button onClick={handleNow} className="flex items-center gap-2 text-xs font-black uppercase bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700">
+          <button onClick={handleNow} className={`flex items-center gap-2 text-xs font-black uppercase px-3 py-1.5 rounded-full ${getAppColor('BUTTON')}`}>
               <Clock size={14} /> Set Now
             </button>
             <label className="flex items-center gap-2 text-xs font-bold uppercase hover:cursor-pointer">
@@ -166,14 +167,14 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Start</label>
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />
-              {!isAllDay && <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />}
+              <label className={`block text-[10px] font-black uppercase mb-1 ${getAppColor('TEXT')}`}>Start</label>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={`w-full border p-2 rounded text-sm ${getAppColor('BG')} ${getAppColor('BORDER')}`} />
+              {!isAllDay && <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={`w-full mt-2 p-2 rounded text-sm border ${getAppColor('BG')} ${getAppColor('BORDER')}`} />}
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">End</label>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />
-              {!isAllDay && <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-sm" />}
+              <label className={`block text-[10px] font-black uppercase mb-1 ${getAppColor('TEXT')}`}>End</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={`w-full border p-2 rounded text-sm ${getAppColor('BG')} ${getAppColor('BORDER')}`} />
+              {!isAllDay && <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={`w-full mt-2 border p-2 rounded text-sm ${getAppColor('BG')} ${getAppColor('BORDER')}`} />}
             </div>
           </div>
         </div>
@@ -184,12 +185,12 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
           <div className="flex gap-4">
           {EVENT_COLORS.map((color) => (
               <button
-              key={color.name}
-              onClick={() => setSelectedColor(color.name)}
-              className={`w-8 h-8 rounded-full transition-all transform hover:cursor-pointer
-                         ${color.bg} 
-                         ${selectedColor === color.name ? 'ring-4 ring-offset-2 ring-slate-300 dark:ring-slate-600 scale-110' : 'opacity-70'}`}
-              title={color.name}
+              key={color.NAME}
+              onClick={() => setSelectedColor(color.NAME)}
+              className={`w-8 h-8 rounded-full transition-all transform hover:cursor-pointer border
+                         ${getEventColorClass(color.NAME)}
+                         ${selectedColor === color.NAME ? 'ring-4 ring-offset-2 ring-slate-300 dark:ring-slate-600 scale-110' : ''}`}
+              title={color.NAME}
                   />
           ))}
           </div>
@@ -205,7 +206,7 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
             <select 
               value={reminderType} 
               onChange={(e) => setReminderType(e.target.value)}
-              className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-sm"
+              className={`w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded text-sm ${getAppColor('BORDER')}`}
             >
               {["At time", "10 minutes before", "1 hour before", "1 day before"].map(opt => <option key={opt}>{opt}</option>)}
             </select>
@@ -246,20 +247,20 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
             </div>
 
             {/* Until Logic */}
-            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+            <div className={`pt-2 border-t ${getAppColor('BORDER')}`}>
               <label className="block text-[10px] font-black uppercase text-slate-400 mb-2">Repeat Until</label>
               <div className="flex flex-col gap-3">
                 {/* Forever vs Date Toggles */}
                 <div className="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-lg">
                   <button 
                     onClick={() => setRepeatUntilType('forever')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${repeatUntilType === 'forever' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-500'}`}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${repeatUntilType === 'forever' ? getAppColor('BG') : 'hover:cursor-pointer'}`}
                     >
                     Forever
                   </button>
                   <button 
                     onClick={() => setRepeatUntilType('date')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${repeatUntilType === 'date' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-500'}`}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${repeatUntilType === 'date' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'hover:cursor-pointer'}`}
                     >
                     Specific Date
                   </button>
@@ -271,7 +272,7 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
                   type="date" 
                   value={repeatUntilDate} 
                   onChange={(e) => setRepeatUntilDate(e.target.value)} 
-                className="w-full p-2 text-sm font-bold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none animate-in zoom-in-95 duration-150" 
+                    className={`w-full p-2 text-sm font-bold rounded-lg focus:ring-2 focus:ring-blue-500 outline-none animate-in zoom-in-95 duration-150 ${getAppColor('BG')} ${getAppColor('BORDER')}`} 
                 />
                 )}
               </div>
@@ -281,7 +282,7 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
         </div>
       </div>
 
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex gap-2">
+      <div className={`p-4 border-t bg-slate-50 dark:bg-slate-950 flex gap-2 ${getAppColor('BORDER')}`}>
         {mode === 'edit' && (
           <button 
             onClick={async () => { if(confirm('Delete?')) { await db.events.delete(initialData!.id!); onClose(); }}}
@@ -292,7 +293,7 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
         )}
         <button 
           onClick={handleSave}
-          className="flex-1 bg-blue-600 text-white font-black uppercase tracking-widest py-3 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+          className={`flex-1 font-black uppercase tracking-widest py-3 rounded-xl shadow-lg shadow-blue-500/20 transition-all ${getAppColor('BUTTON')}`}
         >
           Save Event
         </button>
