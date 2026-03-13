@@ -1,6 +1,6 @@
 // src/lib/utils.ts
 
-export type AppColorKey = 'TEXT'|'BG'|'BORDER'|'BUTTON'|'TEXT_SECONDARY'|'TEXT_HIGHLIGHT';
+export type AppColorKey = 'TEXT' | 'BG' | 'BORDER' | 'BUTTON' | 'HIGHLIGHT' | 'SECONDARY';
 
 const APP_COLORS: Record<AppColorKey, string> = {
   TEXT: "text-slate-950 dark:text-slate-100",
