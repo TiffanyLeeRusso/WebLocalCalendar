@@ -5,7 +5,7 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { seedDatabase } from '@/lib/seedData';
 import { db, type CalendarItem } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { getAppColor } from '@/lib/utils';
+import { getAppColor, getEventWithHoverStyles } from '@/lib/utils';
 
 import AppHeader from '@/components/layout/AppHeader';
 import EventForm from '@/components/calendar/EventForm';
@@ -27,9 +27,8 @@ export default function Home() {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-      // Forces the sidebar closed on the very first mount
+        // Forces the sidebar closed on the very first mount
         setSidebarOpen(false);
-        //seedDatabase();
     }, []);
 
     const handleEditClick = (event: CalendarItem) => {
@@ -114,7 +113,8 @@ export default function Home() {
                 setSidebarOpen(false); // Close sidebar after selecting search result
               }}
                 className={`w-full text-left p-3 rounded-xl border transition-all shadow-sm
-                            hover:bg-slate-200 dark:hover:bg-slate-800 border-transparent hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900/50`} >
+                                  ${getEventWithHoverStyles(event.color)}
+`} >
               <div className="font-bold text-sm truncate">{event.title}</div>
               <div className="text-xs text-slate-500">
                 {new Date(event.startMs).toLocaleDateString()}

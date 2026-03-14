@@ -28,7 +28,7 @@ A high-performance, privacy-focused local calendar application built with Next.j
    ```bash
    npm run dev
 
-3. **Open http://localhost:3000 to see the app.**
+3. **Open http://localhost:3000/projects/LocalCalendar to see the app.**
 
 4. **Build for Production:**
    ```bash

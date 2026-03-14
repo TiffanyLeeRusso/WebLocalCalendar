@@ -18,7 +18,7 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
 
   const handleAdjustDate = (offset: number) => {
     const newDate = new Date(focusDate);
-    if (currentView === 'month') newDate.setMonth(newDate.getMonth() + offset);
+    if (currentView === 'month' || currentView === 'schedule') newDate.setMonth(newDate.getMonth() + offset);
     else if (currentView === 'day') newDate.setDate(newDate.getDate() + offset);
     else if (currentView === 'year') newDate.setFullYear(newDate.getFullYear() + offset);
     setFocusDate(newDate.getTime());
@@ -62,10 +62,12 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     
     {/* Left: Previous Button */}
     <div className="flex justify-start">
-      <button onClick={() => handleAdjustDate(-1)}
-              className="p-2 rounded hover:bg-slate-200 hover:cursor-pointer dark:hover:bg-slate-700">
-        <ChevronLeft size={30} />
-      </button>
+      {currentView !== 'settings' && (
+        <button onClick={() => handleAdjustDate(-1)}
+                className="p-2 rounded hover:bg-slate-200 hover:cursor-pointer dark:hover:bg-slate-700">
+          <ChevronLeft size={30} />
+        </button>
+      )}
     </div>
 
     {/* Center: Date & Today (Stacked or Grouped) */}
@@ -86,12 +88,14 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
 
     {/* Right: Next Button */}
     <div className="flex justify-end">
-      <button onClick={() => handleAdjustDate(1)}
-              className={`p-2 hover:cursor-pointer rounded
-                          hover:bg-slate-200 dark:hover:bg-slate-700`}>
-        <ChevronRight size={30} />
-      </button>
-    </div>
+     {currentView !== 'settings' && (
+       <button onClick={() => handleAdjustDate(1)}
+                className={`p-2 hover:cursor-pointer rounded
+                            hover:bg-slate-200 dark:hover:bg-slate-700`}>
+          <ChevronRight size={30} />
+        </button>
+     )}
+     </div>
   </div>
 </header>
   );

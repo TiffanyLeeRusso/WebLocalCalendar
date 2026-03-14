@@ -26,14 +26,13 @@ export async function seedDatabase() {
       id: crypto.randomUUID(),
       type: 'event',
       title: '🏃 Morning Run',
-      note: 'Stay active! Route: Around the park.',
+      note: 'Exercise! Route: Around the park.',
       startMs: getTimeToday(7, 0), // 7:00 AM
       endMs: getTimeToday(7, 45),   // 45 min run
       allDay: false,
-      color: 'green',
       repeat: {
         interval: 1,
-        unit: 'day',
+        unit: 'week',
       },
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -43,9 +42,10 @@ export async function seedDatabase() {
       type: 'event',
       title: '🍱 Weekly Team Lunch',
       note: 'Catch up with the crew. Location: Taco Place.',
-      startMs: getTimeToday(12, 0), // 12:00 PM
-      endMs: getTimeToday(13, 0),   // 1:00 PM
+      startMs: new Date(year, month, 5, 12, 0).getTime(),
+      endMs: new Date(year, month, 5, 13, 0).getTime(),
       allDay: false,
+      color: 'green',
       repeat: {
         interval: 1,
         unit: 'week',
@@ -58,10 +58,10 @@ export async function seedDatabase() {
       type: 'event',
       title: '🍽️ Dinner with Friend',
       note: 'Catching up after work.',
-      startMs: getTimeToday(17, 0), // 5:00 PM
-      endMs: getTimeToday(19, 0),   // 7:00 PM
+      startMs: new Date(year, month, 3, 9, 0).getTime(),
+      endMs: new Date(year, month, 3, 10, 0).getTime(),
       allDay: false,
-      color: 'green',
+      color: 'blue',
       createdAt: Date.now(),
       updatedAt: Date.now(),
     },
@@ -70,7 +70,7 @@ export async function seedDatabase() {
       type: 'event',
       title: '💰 Pay Rent',
       note: 'Monthly reminder',
-      startMs: new Date(year, month, 1, 9, 0).getTime(), // 1st of this month
+      startMs: new Date(year, month, 1, 9, 0).getTime(),
       endMs: new Date(year, month, 1, 10, 0).getTime(),
       allDay: true,
       repeat: {
@@ -84,14 +84,62 @@ export async function seedDatabase() {
       id: crypto.randomUUID(),
       type: 'event',
       title: '🦷 Dentist',
-      note: '',
-      startMs: new Date(year, month, 1, 9, 0).getTime(), // 1st of this month
+      note: 'Doctor visit',
+      startMs: new Date(year, month, 1, 9, 0).getTime(),
       endMs: new Date(year, month, 1, 10, 0).getTime(),
       allDay: false,
-      color: 'rose',
+      color: 'amber',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    } ];
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'event',
+      title: '👀 Eye doctor',
+      note: 'Doctor visit',
+      startMs: new Date(year, month, 15, 9, 0).getTime(),
+      endMs: new Date(year, month, 15, 10, 0).getTime(),
+      allDay: false,
+      color: 'amber',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'event',
+      title: '🏖️ Vacation',
+      note: 'Beach',
+      startMs: new Date(year, month, 17, 9, 0).getTime(),
+      endMs: new Date(year, month, 19, 10, 0).getTime(),
+      allDay: false,
+      color: 'blue',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'event',
+      title: 'Spa',
+      note: 'appointment',
+      startMs: new Date(year, month, 18, 13, 0).getTime(),
+      endMs: new Date(year, month, 18, 14, 0).getTime(),
+      allDay: false,
+      color: 'blue',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'event',
+      title: 'Buffet dinner',
+      note: '',
+      startMs: new Date(year, month, 18, 17, 0).getTime(),
+      endMs: new Date(year, month, 18, 18, 0).getTime(),
+      allDay: false,
+      color: 'blue',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }];
 
     await db.events.bulkAdd(seedEvents);
     console.log("Database seeded with varied times.");

@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { expandEvents } from '@/lib/recurrence';
-import { getAppColor, getEventColorClass, EVENT_COLORS } from '@/lib/utils';
+import { getAppColor, getEventWithHoverStyles } from '@/lib/utils';
 
 export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) => void }) {
   const { focusDate, bigText, timeFormat } = useSettingsStore();
@@ -16,27 +16,24 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
   const firstDayOfMonth = new Date(year, month, 1);
   const startOffset = firstDayOfMonth.getDay(); 
 
+  // Generate the 42 days (6 weeks) shown in the grid
   const gridDays = Array.from({ length: 42 }).map((_, i) => new Date(year, month, 1 - startOffset + i));
 
   const events = useLiveQuery(async () => {
       const startRange = gridDays[0].getTime();
       const endRange = gridDays[41].getTime() + 86400000;
 
-      const rawEvents = await db.events
-          .where('startMs')
-          .below(endRange) // Get everything that starts before the end of the view
-          .toArray();
+      // Pull all events to ensure recurring ones started in the past are captured
+      const rawEvents = await db.events.toArray();
 
-      // Apply the expansion logic
+      // Apply expansion logic for the visible 6-week window
       return expandEvents(rawEvents, startRange, endRange);
   }, [focusDate]);
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    // Outer wrapper allows the page to scroll if the grid exceeds screen height
     <div className="w-full h-full p-4 md:p-8 overflow-y-auto custom-scrollbar">
-      {/* Centered container to prevent "too-wide" grid on ultra-wide monitors */}
       <div className={`max-w-6xl mx-auto shadow-2xl rounded-xl overflow-hidden border ${getAppColor('BORDER')}`}>
         
         {/* Day Headers */}
@@ -48,20 +45,31 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
           ))}
         </div>
 
-        {/* The Grid: aspect-square or fixed height on cells */}
+        {/* The Grid */}
         <div className={`grid grid-cols-7 grid-rows-6 border-t border-l ${getAppColor('BORDER')}`}>
           {gridDays.map((date, i) => {
             const isCurrentMonth = date.getMonth() === month;
             const isToday = date.toDateString() === new Date().toDateString();
             
+            // Normalize current grid cell to day bounds for filtering
+            const cellStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+            const cellEnd = cellStart + 86400000 - 1;
+
+            // Filter for events that touch THIS day (handles multi-day spans)
             const dayEvents = events?.filter(e => 
-              new Date(e.startMs).toDateString() === date.toDateString()
-            ).sort((a, b) => a.startMs - b.startMs);
+              e.startMs <= cellEnd && e.endMs >= cellStart
+            ).sort((a, b) => {
+                // Keep the same priority: Multi-day > All-day > Time
+                const isAMulti = (a.endMs - a.startMs) > 86400000;
+                const isBMulti = (b.endMs - b.startMs) > 86400000;
+                if (isAMulti !== isBMulti) return isAMulti ? -1 : 1;
+                if (a.allDay !== b.allDay) return a.allDay ? -1 : 1;
+                return a.startMs - b.startMs;
+            });
 
             return (
               <div 
                 key={i} 
-                // min-h-[120px] ensures cells are large enough to see, h-[15vh] keeps them proportional
                 className={`relative flex flex-col p-1 sm:p-2 min-h-[100px] sm:min-h-[120px]
                 border-b border-r ${getAppColor('BORDER')}
                 ${getAppColor('BG')}
@@ -75,30 +83,42 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
                 </span>
 
                 <div className="flex-1 space-y-1 overflow-y-auto custom-scrollbar">
-                  {dayEvents?.map(event => (
-                    <button
-                      key={event.id}
-                      onClick={() => onEdit(event)}
-                      className={`
-                                  w-full text-left px-2 py-1 rounded transition-all border-2
-                                  ${getEventColorClass(event.color)}
-                                  hover:brightness-110 hover:cursor-pointer
-                                  ${getEventColorClass(event.color, 'BORDER_L')} border-t-transparent border-r-transparent border-b-transparent
-                                  ${getEventColorClass(event.color, 'BORDER_HOVER')}
-                      `}
-                    >
-                      <div className={`font-bold truncate ${getAppColor('TEXT')} ${bigText ? 'text-xs' : 'text-[12px]'}`}>
-                        {event.title}
-                      </div>
-                      <div className="text-[9px] font-medium opacity-80">
-                        {new Date(event.startMs).toLocaleTimeString([], { 
-                          hour: 'numeric', 
-                          minute: '2-digit', 
-                          hour12: timeFormat === '12h' 
-                        })}
-                      </div>
-                    </button>
-                  ))}
+                  {dayEvents?.map(event => {
+                    const isOccurrenceStart = new Date(event.startMs).toDateString() === date.toDateString();
+                    
+                    return (
+                      <button
+                        key={event.id}
+                        onClick={() => onEdit(event)}
+                        className={`
+                          w-full text-left px-2 py-1 rounded transition-all border-2
+                          ${getEventWithHoverStyles(event.color)}
+                        `}
+                      >
+                        <div className={`font-bold truncate ${getAppColor('TEXT')} ${bigText ? 'text-xs' : 'text-[12px]'}`}>
+                          {event.title}
+                        </div>
+                        
+                        {/* Only show time if it's the start day of the occurrence and not all-day */}
+                        {!event.allDay && isOccurrenceStart && (
+                          <div className="text-[9px] font-medium opacity-80">
+                            {new Date(event.startMs).toLocaleTimeString([], { 
+                              hour: 'numeric', 
+                              minute: '2-digit', 
+                              hour12: timeFormat === '12h' 
+                            })}
+                          </div>
+                        )}
+                        
+                        {/* Indicator for continuing multi-day events */}
+                        {!isOccurrenceStart && (
+                          <div className="text-[8px] font-black uppercase opacity-80">
+                            (Cont.)
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             );

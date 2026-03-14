@@ -5,9 +5,9 @@ export type AppColorKey = 'TEXT'|'BG'|'BORDER'|'BUTTON'|'TEXT_SECONDARY'|'TEXT_H
 const APP_COLORS: Record<AppColorKey, string> = {
   TEXT: "text-slate-950 dark:text-slate-100",
   BG: "bg-white dark:bg-slate-900",
-  BORDER: "border-slate-500 dark:border-slate-500",
+  BORDER: "border-slate-500",
   BUTTON: "bg-blue-700 dark:bg-blue-900 text-white hover:bg-sky-600 dark:hover:bg-sky-700 hover:cursor-pointer transition-colors",
-  TEXT_SECONDARY: "text-slate-600 dark:text-slate-400",
+  TEXT_SECONDARY: "text-slate-700 dark:text-slate-300",
   TEXT_HIGHLIGHT: "text-blue-600 dark:text-blue-400"
 };
 
@@ -33,7 +33,7 @@ export const EVENT_COLORS = [
       BORDER_L: 'border-l-blue-800' },
 
     { NAME: 'green',
-      BG: 'bg-emerald-200/30 dark:bg-emerald-900/20',
+      BG: 'bg-emerald-200/40 dark:bg-emerald-900/20',
       BORDER: 'border-emerald-800',
       BORDER_HOVER: 'hover:border-t-emerald-800 hover:border-r-emerald-800 hover:border-b-emerald-800 hover:border-l-emerald-800',
       BORDER_L: 'border-l-emerald-800' },
@@ -45,7 +45,7 @@ export const EVENT_COLORS = [
       BORDER_L: 'border-l-amber-800' },
 
     { NAME: 'rose',
-      BG: 'bg-pink-300/30 dark:bg-pink-900/20',
+      BG: 'bg-pink-300/40 dark:bg-pink-900/20',
       BORDER: 'border-pink-800',
       BORDER_HOVER: 'hover:border-t-pink-800 hover:border-r-pink-800 hover:border-b-pink-800 hover:border-l-pink-800',
       BORDER_L: 'border-l-pink-800' },
@@ -61,3 +61,12 @@ export const getEventColorClass = (colorName?: string,
     return part ? color[part] : `${color.BG} ${color.BORDER}`;
 };
 
+// Event colors plus the left-side border and full border on hover.
+export const getEventWithHoverStyles = (colorName?: string) => {
+    return `
+${getEventColorClass(colorName)}
+hover:brightness-110 hover:cursor-pointer
+${getEventColorClass(colorName, 'BORDER_L')} border-t-transparent border-r-transparent border-b-transparent
+${getEventColorClass(colorName, 'BORDER_HOVER')}
+`;
+};
