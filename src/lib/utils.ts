@@ -1,13 +1,16 @@
 // src/lib/utils.ts
 
-export type AppColorKey = 'TEXT'|'BG'|'BORDER'|'BUTTON'|'TEXT_SECONDARY'|'TEXT_HIGHLIGHT';
+export type AppColorKey = 'TEXT'|'BG'|'BG_PANEL'|'BORDER'|'BORDER_FOCUS'|'BUTTON'|'BUTTON_SECONDARY'|'TEXT_SECONDARY'|'TEXT_HIGHLIGHT';
 
 const APP_COLORS: Record<AppColorKey, string> = {
   TEXT: "text-slate-950 dark:text-slate-100",
   BG: "bg-white dark:bg-slate-900",
+  BG_PANEL: "bg-blue-100/50 dark:bg-slate-800",
   BORDER: "border-slate-500",
+  BORDER_FOCUS: "focus:border-blue-500 focus:outline focus:outline-solid focus-visible:outline focus-visible:outline-solid",
   BUTTON: "bg-blue-700 dark:bg-blue-900 text-white hover:bg-sky-600 dark:hover:bg-sky-700 hover:cursor-pointer transition-colors",
-  TEXT_SECONDARY: "text-slate-700 dark:text-slate-300",
+  BUTTON_SECONDARY: "p-4 transition-colors hover:cursor-pointer rounded hover:bg-slate-200 dark:hover:bg-slate-800",
+  TEXT_SECONDARY: "text-slate-700 dark:text-slate-300/70",
   TEXT_HIGHLIGHT: "text-blue-600 dark:text-blue-400"
 };
 
@@ -15,7 +18,7 @@ export const getAppColor = (key: AppColorKey): string => {
   return APP_COLORS[key] || "";
 };
 
-// We have to use the full Tailwind color-class names (with pseudo classes!)
+// We have to use the full Tailwind color-class names (with utility classes!)
 // in our code (instead of piecing them together in JS or JSX) or Tailwind will
 // not generate those classes in the stylesheet. Or we can use Tailwind's
 // 'safelist' in the config.
@@ -69,4 +72,13 @@ hover:brightness-110 hover:cursor-pointer
 ${getEventColorClass(colorName, 'BORDER_L')} border-t-transparent border-r-transparent border-b-transparent
 ${getEventColorClass(colorName, 'BORDER_HOVER')}
 `;
+};
+
+export const getTextClass = (bigText:boolean) => {
+  return bigText ? 'text-xl' : 'text-base';
+};
+
+// For icons
+export const getIconSize = (bigText:boolean) => {
+  return bigText ? '24' : '16';
 };

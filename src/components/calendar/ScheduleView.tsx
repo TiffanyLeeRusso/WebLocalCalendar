@@ -3,22 +3,23 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { getAppColor, getEventColorClass } from '@/lib/utils';
+import { getAppColor, getTextClass } from '@/lib/utils';
 import { expandEvents } from '@/lib/recurrence'; // Import your helper
-import { Clock, Calendar as CalIcon, ChevronRight } from 'lucide-react';
+
+import EventCard from '@/components/calendar/EventCard';
 
 interface ScheduleViewProps {
   onEdit: (event: CalendarItem) => void;
 }
 
 export default function ScheduleView({ onEdit }: ScheduleViewProps) {
-  const { timeFormat, focusDate } = useSettingsStore();
-  
+  const { timeFormat, bigText, focusDate } = useSettingsStore();
+
   const focus = new Date(focusDate);
   const startOfMonth = new Date(focus.getFullYear(), focus.getMonth(), 1).getTime();
   const endOfMonth = new Date(focus.getFullYear(), focus.getMonth() + 1, 0, 23, 59, 59).getTime();
 
-  // Fetch all events. Since recurring events can start years ago, 
+  // Fetch all events. Since recurring events can start years ago,
   // we pull them all and let expandEvents filter the relevant occurrences.
   const rawEvents = useLiveQuery(() => db.events.toArray(), [focusDate]);
 
@@ -41,7 +42,7 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
   expandedEvents.forEach(event => {
     const eventStart = new Date(event.startMs);
     const eventEnd = new Date(event.endMs);
-    
+
     // Normalize current day to midnight for the loop
     let current = new Date(eventStart.getFullYear(), eventStart.getMonth(), eventStart.getDate());
     const end = new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate());
@@ -79,7 +80,7 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
         sortedDays.map((dateStr) => {
           const isToday = dateStr === todayKey;
           const dateObj = new Date(dateStr);
-          
+
           // Sort events for THIS day specifically
           const dayEvents = [...groupedEvents[dateStr]].sort((a, b) => {
             const isAMulti = (a.endMs - a.startMs) > 86400000;
@@ -93,17 +94,17 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
             <div key={dateStr} className="space-y-3">
               {/* Day Header */}
               <div className="flex items-center gap-4 py-2 sticky top-0 z-10 backdrop-blur-sm">
-                <div className={`
-                  flex flex-col items-center justify-center w-12 h-12 rounded-xl border-2 transition-colors
-                  ${isToday 
-                    ? 'bg-blue-700 border-blue-700 text-white shadow-lg' 
+                <div className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-colors
+                                 ${getTextClass(bigText)}
+                  ${isToday
+                    ? 'bg-blue-700 border-blue-700 text-white shadow-lg'
                     : `${getAppColor('BG')} ${getAppColor('BORDER')} ${getAppColor('TEXT')}`
                   }
                 `}>
-                  <span className="text-[12px] uppercase font-bold leading-none mb-1">
+                  <span className="uppercase font-bold leading-none mb-1">
                     {dateObj.toLocaleDateString('default', { weekday: 'short' })}
                   </span>
-                  <span className="text-lg font-black leading-none">
+                  <span className="font-black leading-none">
                     {dateObj.getDate()}
                   </span>
                 </div>
@@ -111,67 +112,22 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
               </div>
 
               {/* Day's Events */}
-              <div className="pl-16 space-y-3">
+              <div className="space-y-3">
                 {dayEvents.length === 0 ? (
                   <p className={`text-sm italic py-2 ${getAppColor('TEXT_SECONDARY')}`}>
                     No events scheduled.
                   </p>
                 ) : (
-                  dayEvents.map((event) => {
-                    const isMulti = (event.endMs - event.startMs) > 86400000;
-                    
-                    return (
-                      <div 
-                        key={event.id}
-                        className={`
-                          group p-4 border-2 rounded-2xl transition-all hover:shadow-md
-                          flex items-start justify-between gap-4
-                          ${getEventColorClass(event.color)}
-                        `}
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className={`font-bold text-lg leading-tight ${getAppColor('TEXT')}`}>
-                              {event.title}
-                            </h3>
-                            {isMulti && (
-                              <span className="text-[10px] bg-white/40 dark:bg-black/20 px-1.5 py-0.5 rounded font-black uppercase">
-                                Multi-Day
-                              </span>
-                            )}
-                          </div>
-                          
-                          {event.note && (
-                            <p className={`text-sm line-clamp-2 opacity-80 ${getAppColor('TEXT_SECONDARY')}`}>
-                              {event.note}
-                            </p>
-                          )}
-
-                          <div className={`flex items-center gap-3 mt-2 text-[12px] font-bold uppercase tracking-widest opacity-80 ${getAppColor('TEXT_SECONDARY')}`}>
-                            <span className="flex items-center gap-1.5">
-                              <Clock size={14} />
-                              {event.allDay ? 'All Day' : formatTime(event.startMs)}
-                            </span>
-                            {event.repeat && (
-                              <span className="flex items-center gap-1">
-                                <CalIcon size={14} /> 
-                                {event.repeat.unit}ly
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <button 
-                          onClick={() => onEdit(event)}
-                          className={`
-                            flex items-center gap-1 px-4 py-2 rounded-xl font-bold text-sm
-                            ${getAppColor('BUTTON')}
-                          `}
-                        >
-                          Edit <ChevronRight size={14} />
-                        </button>
-                      </div>
-                    );
+                dayEvents.map((event) => {
+                  return(
+                    <EventCard key={event.id}
+                      event={event}
+                      mode="full"
+                      bigText={bigText}
+                      timeFormat={timeFormat}
+                      currentDate={dateObj}
+                      onClick={() => onEdit(event)}/>
+                  );
                   })
                 )}
               </div>

@@ -2,12 +2,12 @@
 
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { getAppColor } from '@/lib/utils';
+import { getAppColor, getTextClass } from '@/lib/utils';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { expandEvents } from '@/lib/recurrence';
 
 export default function YearView() {
-  const { focusDate, setFocusDate, setCurrentView } = useSettingsStore();
+  const { focusDate, bigText, setFocusDate, setCurrentView } = useSettingsStore();
   const year = new Date(focusDate).getFullYear();
 
   // 1. Fetch and Expand events for the entire year
@@ -39,16 +39,16 @@ export default function YearView() {
               className={`p-4 rounded-2xl shadow-sm border hover:cursor-pointer group
                           md:transition-transform md:duration-200 md:hover:scale-105 md:hover:shadow-xl
                           active:bg-slate-100 dark:active:bg-slate-800 md:active:scale-105
-                          ${getAppColor('BG')} ${getAppColor('BORDER')}`}
+                          ${getAppColor('BG')} ${getAppColor('BORDER')} ${getTextClass(bigText)}`}
               onClick={() => handleMonthClick(monthDate)}
             >
-              <h3 className={`font-black mb-4 uppercase text-sm tracking-widest  ${getAppColor('TEXT_HIGHLIGHT')}`}>
+              <h3 className={`font-black mb-4 uppercase tracking-widest ${getAppColor('TEXT_HIGHLIGHT')}`}>
                 {monthDate.toLocaleString('default', { month: 'long' })}
               </h3>
 
               <div className="grid grid-cols-7 gap-1">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                  <div key={i} className={`text-[12px] font-black text-center opacity-40 ${getAppColor('TEXT')}`}>
+                  <div key={i} className={`font-black text-center ${getAppColor('TEXT_SECONDARY')}`}>
                     {d}
                   </div>
                 ))}
@@ -86,7 +86,7 @@ function renderMiniGrid(monthDate: Date, events: any[]) {
       <div 
         key={d} 
         className={`
-          aspect-square flex items-center justify-center text-[11px] sm:text-[13px] rounded-full font-bold transition-colors
+          aspect-square flex items-center justify-center rounded-full font-bold transition-colors
           ${hasEvents ? 'bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-blue-50' : getAppColor('TEXT_SECONDARY')}
           ${isToday ? 'ring-2 ring-blue-700 dark:ring-blue-200 ' : ''}
         `}

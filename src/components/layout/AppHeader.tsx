@@ -1,10 +1,10 @@
 'use client';
 import { Menu, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { getAppColor } from '@/lib/utils';
+import { getAppColor, getTextClass, getIconSize } from '@/lib/utils';
 
 export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
-  const { currentView, focusDate, setFocusDate, setSidebarOpen } = useSettingsStore();
+  const { currentView, bigText, focusDate, setFocusDate, setSidebarOpen } = useSettingsStore();
 
   const date = new Date(focusDate);
   
@@ -35,13 +35,13 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
       <button 
         onClick={() => setSidebarOpen(true)} 
         className={`p-2 rounded-md ${getAppColor('BUTTON')}`}>
-        <Menu size={30} />
+          <Menu size={bigText ? 30 : 24} />
       </button>
     </div>
 
     {/* Center: Takes up all available space */}
-    <h1 className={`px-2 font-black text-xl sm:text-2xl uppercase tracking-[0.2em] truncate
-                   ${getAppColor('TEXT')}`}>
+    <h1 className={`px-2 font-black uppercase tracking-[0.2em] truncate
+                    ${getAppColor('TEXT')} ${getTextClass(bigText)}`}>
       {currentView}
     </h1>
 
@@ -52,7 +52,7 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
         className={`p-3 rounded-full shadow-lg transition-all
                     ${getAppColor('BUTTON')}`}
         >
-        <Plus size={30} />
+          <Plus size={bigText ? 30 : 24} />
       </button>
     </div>
   </div>
@@ -64,21 +64,21 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     <div className="flex justify-start">
       {currentView !== 'settings' && (
         <button onClick={() => handleAdjustDate(-1)}
-                className="p-2 rounded hover:bg-slate-200 hover:cursor-pointer dark:hover:bg-slate-700">
-          <ChevronLeft size={30} />
+                className={`${getAppColor('BUTTON_SECONDARY')}`}>
+              <ChevronLeft size={getIconSize(bigText)} />
         </button>
       )}
     </div>
 
     {/* Center: Date & Today (Stacked or Grouped) */}
     <div className="flex flex-col items-center gap-1">
-      <span className="font-bold text-lg sm:text-xl whitespace-nowrap">
+      <span className={`font-bold whitespace-nowrap ${getTextClass(bigText)}`}>
         {getDisplayDate()}
       </span>
       {currentView !== 'settings' && currentView !== 'schedule' && (
       <button 
         onClick={() => setFocusDate(Date.now())} 
-          className={`px-3 py-0.5 text-[12px] font-black uppercase transition-colors rounded-full
+          className={`px-3 py-0.5 font-black rounded-full ${getTextClass(bigText)}
                       ${getAppColor('BUTTON')}`}
         >
         Today
@@ -90,9 +90,8 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     <div className="flex justify-end">
      {currentView !== 'settings' && (
        <button onClick={() => handleAdjustDate(1)}
-                className={`p-2 hover:cursor-pointer rounded
-                            hover:bg-slate-200 dark:hover:bg-slate-700`}>
-          <ChevronRight size={30} />
+               className={`${getAppColor('BUTTON_SECONDARY')}`}>
+             <ChevronRight size={getIconSize(bigText)} />
         </button>
      )}
      </div>

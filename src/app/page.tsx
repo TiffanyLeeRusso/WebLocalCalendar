@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { seedDatabase } from '@/lib/seedData';
 import { db, type CalendarItem } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { getAppColor, getEventWithHoverStyles } from '@/lib/utils';
+import { getTextClass, getIconSize, getAppColor, getEventWithHoverStyles } from '@/lib/utils';
+import { X } from 'lucide-react';
 
 import AppHeader from '@/components/layout/AppHeader';
 import EventForm from '@/components/calendar/EventForm';
@@ -14,12 +14,13 @@ import MonthView from '@/components/calendar/MonthView';
 import DayView from '@/components/calendar/DayView';
 import YearView from '@/components/calendar/YearView';
 import ScheduleView from '@/components/calendar/ScheduleView';
+import EventCard from '@/components/calendar/EventCard';
 
 import { Plus, Settings as SettingsIcon, Calendar as CalendarIcon } from 'lucide-react';
 
 // Home
 export default function Home() {
-    const { bigText, isSidebarOpen, setSidebarOpen, currentView, setCurrentView } = useSettingsStore();
+    const { bigText, timeFormat, isSidebarOpen, setSidebarOpen, currentView, setCurrentView } = useSettingsStore();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
@@ -59,7 +60,7 @@ export default function Home() {
     return (
     <div className={`flex h-screen overflow-hidden
                      ${getAppColor('BG')} ${getAppColor('TEXT')}
-                     ${bigText ? 'big-text-mode' : ''}`}>
+                     ${getTextClass(bigText)}`}>
       {/* SIDEBAR */}
       <aside className={`
         flex flex-col h-full overflow-hidden border-r
@@ -70,11 +71,10 @@ export default function Home() {
              `}>
         <div className={`p-4 flex justify-between items-center border-b
                         ${getAppColor('BORDER')}`}>
-          <span className="font-bold text-xl">Local Calendar</span>
+            <span className={`font-bold ${getTextClass(bigText)}`}>Local Calendar</span>
           <button onClick={() => setSidebarOpen(false)}
-        className={`p-2 hover:cursor-pointer rounded
-                    hover:bg-slate-200 dark:hover:bg-slate-800`}>
-            X
+                  className={`${getAppColor('BUTTON_SECONDARY')}`}>
+             <X size={getIconSize(bigText)} />
           </button>
         </div>
 
@@ -83,7 +83,7 @@ export default function Home() {
             <button
               key={view}
               onClick={() => setCurrentView(view.toLowerCase() as any)}
-              className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${currentView === view.toLowerCase() ? 'bg-blue-200 dark:bg-blue-900 font-bold' : 'hover:bg-slate-200 hover:cursor-pointer dark:hover:bg-slate-800'}`}
+              className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${currentView === view.toLowerCase() ? 'bg-blue-200 dark:bg-blue-900 font-bold' : 'hover:bg-slate-200 hover:cursor-pointer dark:hover:bg-slate-800'} ${getTextClass(bigText)}`}
             >
               {view}
             </button>
@@ -92,34 +92,30 @@ export default function Home() {
 
         <div className={`flex-1 min-h-0 flex flex-col p-4 border-t
                          ${getAppColor('BORDER')}`}>
-          <label htmlFor="sidebar-search" className="block text-sm font-semibold mb-2">Search Events:</label>
+          <label htmlFor="sidebar-search" className={`block font-semibold mb-2 ${getTextClass(bigText)}`}>Search Events:</label>
           <input 
             id="sidebar-search"
             type="text" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..." 
-            className={`w-full p-2 mb-4 rounded outline-none border focus:ring-2
-                        border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-blue-500`}
+            className={`w-full p-2 mb-4 rounded outline-none border
+                        ${getAppColor('BORDER')} ${getAppColor('BORDER_FOCUS')}
+                        ${getTextClass(bigText)}`}
             />
           
           {/* The Scrollable Wrapper */}
-          <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar scrollbar-thin scrollbar-thumb-slate-300">
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar scrollbar-thin scrollbar-thumb-slate-300">
             {searchResults?.map(event => (
-            <button
-              key={event.id}
-              onClick={() => {
-                handleEditClick(event);
-                setSidebarOpen(false); // Close sidebar after selecting search result
-              }}
-                className={`w-full text-left p-3 rounded-xl border transition-all shadow-sm
-                                  ${getEventWithHoverStyles(event.color)}
-`} >
-              <div className="font-bold text-sm truncate">{event.title}</div>
-              <div className="text-xs text-slate-500">
-                {new Date(event.startMs).toLocaleDateString()}
-              </div>
-            </button>
+              <EventCard key={event.id}
+                event={event}
+                mode="compact-date"
+                bigText={bigText}
+                timeFormat={timeFormat}
+                onClick={(ev) => {
+                  handleEditClick(ev);
+                  setSidebarOpen(false);
+                }}/>
             ))}
           </div>
         </div>
