@@ -2,6 +2,8 @@
 
 A high-performance, privacy-focused local calendar application built with Next.js 15 and Dexie.js (IndexedDB).
 
+See it here: <a href="https://tiffany.lee-russo.com/projects/LocalCalendar/" target="_blank">LocalCalendar</a>
+
 ## Features
 * **Zero Server Overhead:** All data is stored locally in your browser using IndexedDB.
 * **Dynamic Day View:** Includes a "Live Now" indicator with a real-time tracking line.
