@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { db, type CalendarItem } from '@/lib/db';
+import { scheduleAllNotifications } from '@/lib/notifications';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { getTextClass, getIconSize, getAppColor, getEventWithHoverStyles } from '@/lib/utils';
 import { X } from 'lucide-react';
@@ -26,11 +27,16 @@ export default function Home() {
     const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
     const [selectedEvent, setSelectedEvent] = useState<CalendarItem | undefined>(undefined);
     const [searchQuery, setSearchQuery] = useState('');
+    const allEvents = useLiveQuery(() => db.events.toArray(), []);
+    
+    useEffect(() => {
+      // Forces the sidebar closed on the very first mount
+      setSidebarOpen(false);
+    }, []);
 
     useEffect(() => {
-        // Forces the sidebar closed on the very first mount
-        setSidebarOpen(false);
-    }, []);
+      if (allEvents) scheduleAllNotifications(allEvents);
+    }, [allEvents]);
 
     const handleEditClick = (event: CalendarItem) => {
         setSelectedEvent(event);
