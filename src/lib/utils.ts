@@ -18,6 +18,15 @@ export const getAppColor = (key: AppColorKey): string => {
   return APP_COLORS[key] || "";
 };
 
+// Keep in sync with Unity enum for compatible import/exports
+export enum CalendarItemColor {
+  Transparent = 0,
+  Blue = 1,
+  Green = 2,
+  Amber = 3,
+  Rose = 4
+}
+
 // We have to use the full Tailwind color-class names (with utility classes!)
 // in our code (instead of piecing them together in JS or JSX) or Tailwind will
 // not generate those classes in the stylesheet. Or we can use Tailwind's

@@ -3,8 +3,9 @@
 import { getAppColor, getTextClass, getIconSize } from '@/lib/utils';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { db } from '@/lib/db';
+import { exportEventsToJson, importEventsFromJson } from '@/lib/data-transfer';
 import { seedDatabase } from '@/lib/seedData';
-import { Trash2, RefreshCcw, AlertTriangle } from 'lucide-react';
+import { Download, Upload, Trash2, RefreshCcw, AlertTriangle } from 'lucide-react';
 
 export default function SettingsPanel() {
   const { 
@@ -13,6 +14,18 @@ export default function SettingsPanel() {
     bigText, toggleBigText, 
     theme, setTheme 
   } = useSettingsStore();
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const count = await importEventsFromJson(file);
+        alert(`Successfully imported ${count} items!`);
+      } catch (err) {
+        alert("Import failed. Check file format.");
+      }
+    }
+  };
 
   // JS Function to Clear IndexedDB
   const handleClearDatabase = async () => {
@@ -37,7 +50,7 @@ export default function SettingsPanel() {
   };
 
   return (
-    <div className="max-w-2xl mx-4 md:mx-auto pb-20"> {/* mx-4 adds the margin at small sizes */}
+    <div className="max-w-2xl mx-4 md:mx-auto pb-20">
       
       <div className={`overflow-hidden border rounded-xl shadow-sm mt-10
                        ${getAppColor('BG')} ${getAppColor('BORDER')}`}>
@@ -101,6 +114,31 @@ export default function SettingsPanel() {
         </div>
       </div>
 
+      {/* EVENT BACKUP */}
+      <section className="mt-12 space-y-4">
+        <div className="flex items-center gap-2 px-2">
+          <h2 className={`font-black ${getAppColor('TEXT_SECONDARY')} ${getTextClass(bigText)}`}>
+            Event Backup
+          </h2>
+        </div>
+
+        <div className={`p-6 border-2 border-dashed rounded-2xl ${getAppColor('BORDER')}`}>
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={exportEventsToJson}
+              className={`flex items-center justify-center gap-2 p-4 rounded-xl ${getAppColor('BUTTON')}`}
+            >
+              <Download size={20} /> Export JSON
+            </button>
+
+            <label className={`flex items-center justify-center gap-2 p-4 rounded-xl font-bold cursor-pointer transition-all ${getAppColor('BUTTON')}`}>
+              <Upload size={20} /> Import JSON
+              <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+            </label>
+          </div>
+        </div>
+      </section>
+
       {/* TECH ZONE */}
       <div className="mt-12 space-y-4">
         <div className="flex items-center gap-2 px-2">
@@ -110,8 +148,7 @@ export default function SettingsPanel() {
           </h2>
         </div>
 
-        <div className={`p-6 border-2 border-dashed rounded-2xl ${getAppColor('BORDER')} bg-slate-50/30 dark:bg-slate-900/30`}>
-          {/* Flex column instead of Grid for vertical stacking */}
+        <div className={`p-6 border-2 border-dashed rounded-2xl ${getAppColor('BORDER')}`}>
           <div className="flex flex-col gap-4">
             
             {/* Clear Button */}

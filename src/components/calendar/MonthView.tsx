@@ -35,7 +35,7 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="w-full h-full p-4 md:p-8 overflow-y-auto custom-scrollbar">
+    <div className="w-full h-full py-4 md:p-2 overflow-y-auto custom-scrollbar">
       <div className={`max-w-6xl mx-auto shadow-2xl rounded-xl overflow-hidden border ${getAppColor('BORDER')}`}>
 
         {/* Day Headers */}
@@ -72,7 +72,7 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
             return (
               <div
                 key={i}
-                className={`relative flex flex-col p-1 sm:p-2 min-h-[100px] sm:min-h-[120px]
+                className={`relative flex flex-col sm:p-2 min-h-[100px] sm:min-h-[120px]
                 border-b border-r ${getAppColor('BORDER')}
                 ${getAppColor('BG')}
                 ${!isCurrentMonth ? 'bg-slate-50/50 dark:bg-slate-950/50 opacity-40' : ''}`}

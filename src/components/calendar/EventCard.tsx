@@ -90,8 +90,8 @@ export default function EventCard({
     return (
       <button
         onClick={() => onClick(event)}
-        className={`w-full text-left px-3 py-2 rounded-xl border-2 transition-all shadow-sm
-${getEventWithHoverStyles(event.color)} ${bigText ? 'text-xl' : 'text-xs'}
+        className={`w-full text-left p-1 md:px-3 md:py-2 rounded-xl border-2 transition-all shadow-sm
+${getEventWithHoverStyles(event.color)} ${bigText ? 'md:text-xl' : 'md:text-xs'} ${bigText ? '' : 'text-[8px]'}
         `}
       >
         <div className="font-bold truncate leading-tight">{event.title}</div>
