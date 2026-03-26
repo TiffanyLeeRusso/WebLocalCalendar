@@ -33,9 +33,7 @@ export async function seedDatabase() {
       repeat: {
         interval: 1,
         unit: 'week',
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      }
     },
     {
       id: crypto.randomUUID(),
@@ -49,9 +47,7 @@ export async function seedDatabase() {
       repeat: {
         interval: 1,
         unit: 'week',
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      }
     },
     {
       id: crypto.randomUUID(),
@@ -61,9 +57,7 @@ export async function seedDatabase() {
       startMs: new Date(year, month, 3, 17, 0).getTime(),
       endMs: new Date(year, month, 3, 19, 0).getTime(),
       allDay: false,
-      color: 'blue',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      color: 'blue'
     },
     {
       id: crypto.randomUUID(),
@@ -76,9 +70,7 @@ export async function seedDatabase() {
       repeat: {
         interval: 1,
         unit: 'month',
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      }
     },
     {
       id: crypto.randomUUID(),
@@ -88,9 +80,7 @@ export async function seedDatabase() {
       startMs: new Date(year, month, 1, 9, 0).getTime(),
       endMs: new Date(year, month, 1, 10, 0).getTime(),
       allDay: false,
-      color: 'amber',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      color: 'amber'
     },
     {
       id: crypto.randomUUID(),
@@ -100,9 +90,7 @@ export async function seedDatabase() {
       startMs: new Date(year, month, 15, 9, 0).getTime(),
       endMs: new Date(year, month, 15, 10, 0).getTime(),
       allDay: false,
-      color: 'amber',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      color: 'amber'
     },
     {
       id: crypto.randomUUID(),
@@ -112,9 +100,7 @@ export async function seedDatabase() {
       startMs: new Date(year, month, 17, 9, 0).getTime(),
       endMs: new Date(year, month, 19, 10, 0).getTime(),
       allDay: false,
-      color: 'blue',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      color: 'blue'
     },
     {
       id: crypto.randomUUID(),
@@ -124,9 +110,7 @@ export async function seedDatabase() {
       startMs: new Date(year, month, 18, 13, 0).getTime(),
       endMs: new Date(year, month, 18, 14, 0).getTime(),
       allDay: false,
-      color: 'blue',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      color: 'blue'
     },
     {
       id: crypto.randomUUID(),
@@ -136,9 +120,7 @@ export async function seedDatabase() {
       startMs: new Date(year, month, 18, 17, 0).getTime(),
       endMs: new Date(year, month, 18, 18, 0).getTime(),
       allDay: false,
-      color: 'blue',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      color: 'blue'
     }];
 
     await db.events.bulkAdd(seedEvents);

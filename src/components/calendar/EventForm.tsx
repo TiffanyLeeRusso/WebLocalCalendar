@@ -117,8 +117,6 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
       allDay: isAllDay,
       startMs,
       endMs,
-      createdAt: initialData?.createdAt || Date.now(),
-      updatedAt: Date.now(),
       color: selectedColor,
       repeat: isRepeating ? {
           interval: repeatValue,

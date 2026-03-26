@@ -42,7 +42,7 @@ const toJsonItem = (event: CalendarItem): Record<string, unknown> => {
 };
 
 // JSON item (Unity/PascalCase) → CalendarItem (web/camelCase)
-const fromJsonItem = (item: any): Omit<CalendarItem, 'createdAt'> => ({
+const fromJsonItem = (item: any) => ({
   id:        item.Id,
   type:      item.Type,
   title:     item.Title      ?? '',
@@ -61,7 +61,6 @@ const fromJsonItem = (item: any): Omit<CalendarItem, 'createdAt'> => ({
   reminders: item.Reminders
     ? item.Reminders.map((r: any) => ({ offsetSeconds: r.OffsetSeconds }))
     : undefined,
-  updatedAt: Date.now(),
 });
 
 // ── Export ────────────────────────────────────────────────────────────────────
