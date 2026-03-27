@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type CalendarItem } from '@/lib/db';
+import { useFocusOnMount } from '@/hooks/useFocusOnMount';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { expandEvents } from '@/lib/recurrence';
 import { getAppColor, getIconSize, getEventWithHoverStyles } from '@/lib/utils';
@@ -20,6 +21,8 @@ export default function DayView({ onEdit }: { onEdit: (event: CalendarItem) => v
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  const focusRef = useFocusOnMount<HTMLDivElement>();
 
   const focus = new Date(focusDate);
   const startOfDayMs = new Date(focus.getFullYear(), focus.getMonth(), focus.getDate()).getTime();
@@ -56,7 +59,13 @@ export default function DayView({ onEdit }: { onEdit: (event: CalendarItem) => v
   };
 
   return (
-    <div className={`flex flex-col h-full max-w-3xl mx-auto ${getAppColor('BORDER')} ${getAppColor('BG')}`}>
+    <div ref={focusRef}
+         tabIndex={-1}
+         role="region"
+         aria-label={!events || events?.length === 0
+         ? "Day view, no events today"
+         : "Day view"}
+         className={`flex flex-col h-full max-w-3xl mx-auto ${getAppColor('BORDER')} ${getAppColor('BG')}`}>
 
       {/* Pinned Top Section (Static) */}
       {allDayOrMulti.length > 0 && (

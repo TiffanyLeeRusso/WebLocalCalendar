@@ -5,11 +5,14 @@ import { db, CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { expandEvents } from '@/lib/recurrence';
 import { getAppColor } from '@/lib/utils';
+import { useFocusOnMount } from '@/hooks/useFocusOnMount';
 
 import EventCard from '@/components/calendar/EventCard';
 
 export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) => void }) {
   const { focusDate, bigText, timeFormat } = useSettingsStore();
+
+  const focusRef = useFocusOnMount<HTMLDivElement>();
 
   const viewDate = new Date(focusDate);
   const year = viewDate.getFullYear();
@@ -32,10 +35,24 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
       return expandEvents(rawEvents, startRange, endRange);
   }, [focusDate]);
 
+  // Get the event count for only this month so we can announce the event count properly
+  // (the visual grid might "overflow" months)
+  const thisMonthStart = new Date(year, month, 1).getTime();
+  const thisMonthEnd = new Date(year, month + 1, 0, 23, 59, 59).getTime(); // new Date(year, month + 1, 0): day 0 of the next month gives the last day of the current month.
+  const thisMonthEventCount = events?.filter(
+    e => e.startMs <= thisMonthEnd && e.endMs >= thisMonthStart
+  ).length ?? 0;
+
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="w-full h-full py-4 md:p-2 overflow-y-auto custom-scrollbar">
+    <div ref={focusRef}
+         tabIndex={-1}
+         role="region"
+         aria-label={thisMonthEventCount === 0
+         ? "Month view, no events this month"
+         : "Month view"}
+       className="w-full h-full py-4 md:p-2 overflow-y-auto custom-scrollbar">
       <div className={`max-w-6xl mx-auto shadow-2xl rounded-xl overflow-hidden border ${getAppColor('BORDER')}`}>
 
         {/* Day Headers */}

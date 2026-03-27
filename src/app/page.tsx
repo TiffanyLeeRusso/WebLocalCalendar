@@ -6,6 +6,7 @@ import { db, type CalendarItem } from '@/lib/db';
 import { scheduleAllNotifications } from '@/lib/notifications';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { getTextClass, getIconSize, getAppColor, getEventWithHoverStyles } from '@/lib/utils';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { X } from 'lucide-react';
 
 import AppHeader from '@/components/layout/AppHeader';
@@ -28,7 +29,8 @@ export default function Home() {
     const [selectedEvent, setSelectedEvent] = useState<CalendarItem | undefined>(undefined);
     const [searchQuery, setSearchQuery] = useState('');
     const allEvents = useLiveQuery(() => db.events.toArray(), []);
-    
+    const sidebarRef = useFocusTrap(isSidebarOpen, () => setSidebarOpen(false));
+
     useEffect(() => {
       // Forces the sidebar closed on the very first mount
       setSidebarOpen(false);
@@ -67,8 +69,19 @@ export default function Home() {
     <div className={`flex h-screen overflow-hidden
                      ${getAppColor('BG')} ${getAppColor('TEXT')}
                      ${getTextClass(bigText)}`}>
+
+      {/* Announcement for view changes */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {currentView.charAt(0).toUpperCase() + currentView.slice(1)} view
+      </div>
+
       {/* SIDEBAR */}
-      <aside className={`
+      <aside
+        ref={sidebarRef as React.RefObject<HTMLElement>}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        className={`
         flex flex-col h-full overflow-hidden border-r
         fixed inset-y-0 left-0 z-50 w-72
         bg-slate-50 dark:bg-slate-950 ${getAppColor('BORDER')}
@@ -77,8 +90,9 @@ export default function Home() {
              `}>
         <div className={`p-4 flex justify-between items-center border-b
                         ${getAppColor('BORDER')}`}>
-            <span className={`font-bold ${getTextClass(bigText)}`}>Local Calendar</span>
-          <button onClick={() => setSidebarOpen(false)}
+          <span className={`font-bold ${getTextClass(bigText)}`}>Local Calendar</span>
+          <button aria-label="Close menu"
+                  onClick={() => setSidebarOpen(false)}
                   className={`${getAppColor('BUTTON_SECONDARY')}`}>
              <X size={getIconSize(bigText)} />
           </button>
@@ -88,7 +102,10 @@ export default function Home() {
           {['Month', 'Day', 'Year', 'Schedule', 'Settings'].map((view) => (
             <button
               key={view}
-              onClick={() => setCurrentView(view.toLowerCase() as any)}
+              onClick={() => {
+                setCurrentView(view.toLowerCase() as any);
+                setSidebarOpen(false);
+              }}
               className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${currentView === view.toLowerCase() ? 'bg-blue-200 dark:bg-blue-900 font-bold' : 'hover:bg-slate-200 hover:cursor-pointer dark:hover:bg-slate-800'} ${getTextClass(bigText)}`}
             >
               {view}

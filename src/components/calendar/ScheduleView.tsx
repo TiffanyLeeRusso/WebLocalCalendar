@@ -3,6 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type CalendarItem } from '@/lib/db';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useFocusOnMount } from '@/hooks/useFocusOnMount';
 import { getAppColor, getTextClass } from '@/lib/utils';
 import { expandEvents } from '@/lib/recurrence'; // Import your helper
 
@@ -15,6 +16,8 @@ interface ScheduleViewProps {
 export default function ScheduleView({ onEdit }: ScheduleViewProps) {
   const { timeFormat, bigText, focusDate } = useSettingsStore();
 
+  const focusRef = useFocusOnMount<HTMLDivElement>();
+    
   const focus = new Date(focusDate);
   const startOfMonth = new Date(focus.getFullYear(), focus.getMonth(), 1).getTime();
   const endOfMonth = new Date(focus.getFullYear(), focus.getMonth() + 1, 0, 23, 59, 59).getTime();
@@ -71,9 +74,11 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
   const sortedDays = Object.keys(groupedEvents).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 mt-10 mb-20 px-4">
+    <div ref={focusRef} tabIndex={-1} role="region" aria-label="Schedule view" className="max-w-3xl mx-auto space-y-8 mt-10 mb-20 px-4">
       {sortedDays.length === 0 ? (
-        <div className={`p-12 border-2 border-dashed rounded-2xl text-center ${getAppColor('TEXT_SECONDARY')}`}>
+        <div tabIndex={0}
+             aria-label="No events scheduled for this month"
+             className={`p-12 border-2 border-dashed rounded-2xl text-center ${getAppColor('TEXT_SECONDARY')}`}>
           No events scheduled for this month.
         </div>
       ) : (
@@ -91,10 +96,13 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
           });
 
           return (
-            <div key={dateStr} className="space-y-3">
+            <div key={dateStr}
+                 tabIndex={0}
+                 aria-label={`${isToday ? 'Today, ' : ''}${dateObj.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })}, ${dayEvents.length} event${dayEvents.length !== 1 ? 's' : ''}`}
+                 className="space-y-3">
               {/* Day Header */}
               <div className="flex items-center gap-4 py-2 sticky top-0 z-10 backdrop-blur-sm">
-                <div className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-colors
+                <div aria-hidden="true" className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-colors
                                  ${getTextClass(bigText)}
                   ${isToday
                     ? 'bg-blue-700 border-blue-700 text-white shadow-lg'
@@ -108,7 +116,7 @@ export default function ScheduleView({ onEdit }: ScheduleViewProps) {
                     {dateObj.getDate()}
                   </span>
                 </div>
-                <div className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
+                <div aria-hidden="true" className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
               </div>
 
               {/* Day's Events */}

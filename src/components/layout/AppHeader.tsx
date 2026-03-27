@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useRef } from 'react';
 import { Menu, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { getAppColor, getTextClass, getIconSize } from '@/lib/utils';
@@ -6,8 +7,15 @@ import { getAppColor, getTextClass, getIconSize } from '@/lib/utils';
 export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
   const { currentView, bigText, focusDate, setFocusDate, setSidebarOpen } = useSettingsStore();
 
+  const h1Ref = useRef<HTMLHeadingElement>(null); // For default focus
   const date = new Date(focusDate);
-  
+
+  useEffect(() => {
+    // Use setTimeout to ensure the element is ready to receive focus.
+    const id = setTimeout(() => h1Ref.current?.focus(), 0);
+    return () => clearTimeout(id);
+  }, []);
+    
   const getDisplayDate = () => {
     if (currentView === 'year') return date.getFullYear().toString();
     if (currentView === 'month') return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
@@ -29,26 +37,30 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
                       ${getAppColor('BG')} ${getAppColor('BORDER')}`}>
   {/* Top Row: Navigation & View Title */}
   <div className="w-full max-w-4xl px-4 flex items-center justify-between">
-    
+
     {/* Left Side: Dynamic width based on button */}
     <div className="flex-1 flex justify-start">
-      <button 
-        onClick={() => setSidebarOpen(true)} 
+      <button
+        aria-label="Open menu"
+        onClick={() => setSidebarOpen(true)}
         className={`p-2 rounded-md ${getAppColor('BUTTON')}`}>
           <Menu size={bigText ? 30 : 24} />
       </button>
     </div>
 
     {/* Center: Takes up all available space */}
-    <h1 className={`px-2 font-black uppercase tracking-[0.2em] truncate
+    <h1 ref={h1Ref}
+        tabIndex={-1}
+        className={`px-2 font-black uppercase tracking-[0.2em] truncate
                     ${getAppColor('TEXT')} ${getTextClass(bigText)}`}>
       {currentView}
     </h1>
 
     {/* Right Side: Dynamic width based on button */}
     <div className="flex-1 flex justify-end">
-      <button 
-        onClick={onAddEvent} 
+      <button
+        aria-label="Add event"
+        onClick={onAddEvent}
         className={`p-3 rounded-full shadow-lg transition-all
                     ${getAppColor('BUTTON')}`}
         >
@@ -59,11 +71,12 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
 
   {/* Bottom Row: Date Controls */}
   <div className="w-full max-w-4xl px-4 grid grid-cols-3 items-center">
-    
+
     {/* Left: Previous Button */}
     <div className="flex justify-start">
       {currentView !== 'settings' && (
-        <button onClick={() => handleAdjustDate(-1)}
+        <button aria-label="Previous"
+                onClick={() => handleAdjustDate(-1)}
                 className={`${getAppColor('BUTTON_SECONDARY')}`}>
               <ChevronLeft size={getIconSize(bigText)} />
         </button>
@@ -76,8 +89,8 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
         {getDisplayDate()}
       </span>
       {currentView !== 'settings' && currentView !== 'schedule' && (
-      <button 
-        onClick={() => setFocusDate(Date.now())} 
+      <button
+          onClick={() => setFocusDate(Date.now())}
           className={`px-3 py-0.5 font-black rounded-full ${getTextClass(bigText)}
                       ${getAppColor('BUTTON')}`}
         >
@@ -89,7 +102,8 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
     {/* Right: Next Button */}
     <div className="flex justify-end">
      {currentView !== 'settings' && (
-       <button onClick={() => handleAdjustDate(1)}
+       <button aria-label="Next"
+               onClick={() => handleAdjustDate(1)}
                className={`${getAppColor('BUTTON_SECONDARY')}`}>
              <ChevronRight size={getIconSize(bigText)} />
         </button>
@@ -99,4 +113,3 @@ export default function AppHeader({ onAddEvent }: { onAddEvent: () => void }) {
 </header>
   );
 }
-

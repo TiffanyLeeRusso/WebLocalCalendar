@@ -8,7 +8,7 @@ const APP_COLORS: Record<AppColorKey, string> = {
   BG_PANEL: "bg-blue-100/50 dark:bg-slate-800",
   BORDER: "border-slate-500",
   BORDER_FOCUS: "focus:border-blue-500 focus:outline focus:outline-solid focus-visible:outline focus-visible:outline-solid",
-  BUTTON: "bg-blue-700 dark:bg-blue-900 text-white hover:bg-sky-600 dark:hover:bg-sky-700 hover:cursor-pointer transition-colors",
+  BUTTON: "bg-blue-700 dark:bg-blue-900 text-white font-bold hover:bg-sky-600 dark:hover:bg-sky-700 hover:cursor-pointer transition-colors",
   BUTTON_SECONDARY: "p-4 transition-colors hover:cursor-pointer rounded hover:bg-slate-200 dark:hover:bg-slate-800",
   TEXT_SECONDARY: "text-slate-700 dark:text-slate-300/70",
   TEXT_HIGHLIGHT: "text-blue-600 dark:text-blue-400"

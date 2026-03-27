@@ -37,6 +37,7 @@ export default function EventCard({
     });
   };
 
+  const descId = `event-desc-${event.id}`; // for aria-describedby
   const hasReminder = event.reminders && event.reminders.length > 0;
 
   // Identify relationship between event and "Today" (currentDate)
@@ -62,10 +63,28 @@ export default function EventCard({
     timeDisplay = "→";
   }
 
+  const buildAriaLabel = () => {
+    const parts: string[] = [event.title];
+
+    parts.push(new Date(event.startMs).toLocaleDateString());
+
+    if (!event.allDay && timeDisplay) {
+        parts.push(timeDisplay);
+    } else if (event.allDay) {
+        parts.push('All day');
+    }
+
+    if (event.repeat) parts.push(`Repeats ${event.repeat.unit}ly`);
+    if (hasReminder) parts.push('Has reminder');
+
+    return parts.join(', ');
+  };
+    
   // --- COMPACT MODE (with date) ---
   if (mode === 'compact-date') {
     return (
       <button
+        aria-label={buildAriaLabel()}
         onClick={() => onClick(event)}
         className={`w-full text-left px-3 py-2 rounded-xl border-2 transition-all
           ${getEventWithHoverStyles(event.color)} ${getTextClass(bigText)}
@@ -89,6 +108,7 @@ export default function EventCard({
   if (mode === 'compact-time') {
     return (
       <button
+        aria-label={buildAriaLabel()}
         onClick={() => onClick(event)}
         className={`w-full text-left p-1 md:px-3 md:py-2 rounded-xl border-2 transition-all shadow-sm
 ${getEventWithHoverStyles(event.color)} ${bigText ? 'md:text-xl' : 'md:text-xs'} ${bigText ? '' : 'text-[8px]'}
@@ -148,12 +168,22 @@ ${getEventWithHoverStyles(event.color)} ${bigText ? 'md:text-xl' : 'md:text-xs'}
         </div>
       </div>
 
-      <button
-        onClick={() => onClick(event)}
-        className={`
-          flex items-center gap-4 px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-transform active:scale-95
-          ${getAppColor('BUTTON')} ${getTextClass(bigText)}}
-        `}
+      {/* Visually hidden description */}
+      <div id={descId} className="sr-only">
+        {event.title}.
+        {event.note && ` Note: ${event.note}.`}
+        {event.allDay ? ' All day.' : ` ${timeDisplay}.`}
+        {event.repeat && ` Repeats ${event.repeat.unit}ly.`}
+        {hasReminder && ' Has reminder.'}
+      </div>
+
+      <button aria-label="Edit"
+              aria-describedby={descId}
+              onClick={() => onClick(event)}
+              className={`
+              flex items-center gap-4 px-4 py-2 rounded-xl font-bold whitespace-nowrap
+              ${getAppColor('BUTTON')} ${getTextClass(bigText)}}
+              `}
       >
           <Pencil size={getIconSize(bigText)} />
       </button>
