@@ -10,7 +10,7 @@ import { useFocusOnMount } from '@/hooks/useFocusOnMount';
 import EventCard from '@/components/calendar/EventCard';
 
 export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) => void }) {
-  const { focusDate, bigText, timeFormat } = useSettingsStore();
+    const { focusDate, bigText, timeFormat, weekStart } = useSettingsStore();
 
   const focusRef = useFocusOnMount<HTMLDivElement>();
 
@@ -19,7 +19,9 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
   const month = viewDate.getMonth();
 
   const firstDayOfMonth = new Date(year, month, 1);
-  const startOffset = firstDayOfMonth.getDay();
+  const startOffset = weekStart === 'Mon'
+    ? (firstDayOfMonth.getDay() + 6) % 7
+    : firstDayOfMonth.getDay();
 
   // Generate the 42 days (6 weeks) shown in the grid
   const gridDays = Array.from({ length: 42 }).map((_, i) => new Date(year, month, 1 - startOffset + i));
@@ -43,7 +45,9 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
     e => e.startMs <= thisMonthEnd && e.endMs >= thisMonthStart
   ).length ?? 0;
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const daysOfWeek = weekStart === 'Mon'
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div ref={focusRef}
@@ -89,7 +93,7 @@ export default function MonthView({ onEdit }: { onEdit: (event: CalendarItem) =>
             return (
               <div
                 key={i}
-                className={`relative flex flex-col sm:p-2 min-h-[100px] sm:min-h-[120px]
+                className={`relative flex flex-col sm:p-2 min-h-[100px] sm:min-h-[120px] max-h-[160px] sm:max-h-[200px]
                 border-b border-r ${getAppColor('BORDER')}
                 ${getAppColor('BG')}
                 ${!isCurrentMonth ? 'bg-slate-50/50 dark:bg-slate-950/50 opacity-40' : ''}`}

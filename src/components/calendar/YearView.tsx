@@ -8,7 +8,7 @@ import { useFocusOnMount } from '@/hooks/useFocusOnMount';
 import { expandEvents } from '@/lib/recurrence';
 
 export default function YearView() {
-  const { focusDate, bigText, setFocusDate, setCurrentView } = useSettingsStore();
+  const { focusDate, bigText, weekStart, setFocusDate, setCurrentView } = useSettingsStore();
   const focusRef = useFocusOnMount<HTMLDivElement>();
   const year = new Date(focusDate).getFullYear();
 
@@ -16,10 +16,10 @@ export default function YearView() {
   const yearEvents = useLiveQuery(async () => {
     const startOfYear = new Date(year, 0, 1).getTime();
     const endOfYear = new Date(year, 11, 31, 23, 59, 59).getTime();
-    
+
     // Pull all events to ensure we catch those starting before Jan 1st that repeat/span into this year
     const rawEvents = await db.events.toArray();
-    
+
     // Expand for the whole year
     return expandEvents(rawEvents, startOfYear, endOfYear);
   }, [year]);
@@ -30,6 +30,10 @@ export default function YearView() {
     setFocusDate(date.getTime());
     setCurrentView('month');
   };
+
+  const dayHeaders = weekStart === 'Mon'
+    ? ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+    : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   const buildMonthAriaLabel = (monthDate: Date) => {
     const monthName = monthDate.toLocaleString('default', { month: 'long' });
@@ -43,16 +47,16 @@ export default function YearView() {
     );
 
     if (monthEvents.length === 0) return `${monthName} ${year}, no events`;
-  
+
     return `${monthName} ${year}, ${monthEvents.length} event${monthEvents.length > 1 ? 's' : ''}`;
   };
-    
+
   return (
     <div ref={focusRef} tabIndex={-1} role="region" aria-label="Year view" className="w-full h-full p-4 md:p-8 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {months.map((monthDate) => (
-            <button 
+            <button
               key={monthDate.getMonth()}
               aria-label={buildMonthAriaLabel(monthDate)}
               onClick={() => handleMonthClick(monthDate)}
@@ -66,12 +70,12 @@ export default function YearView() {
               </h3>
 
               <div className="grid grid-cols-7 gap-1">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                    <div key={`${monthDate.getMonth()}-${i}`} aria-hidden="true" className={`font-black text-center ${getAppColor('TEXT_SECONDARY')}`}>
+                {dayHeaders.map((d, i) => (
+                  <div key={`${monthDate.getMonth()}-${i}`} aria-hidden="true" className={`font-black text-center ${getAppColor('TEXT_SECONDARY')}`}>
                     {d}
                   </div>
                 ))}
-                {renderMiniGrid(monthDate, yearEvents || [])}
+              {renderMiniGrid(monthDate, yearEvents || [], weekStart)}
               </div>
             </button>
           ))}
@@ -81,10 +85,14 @@ export default function YearView() {
   );
 }
 
-function renderMiniGrid(monthDate: Date, events: any[]) {
+function renderMiniGrid(monthDate: Date, events: any[], weekStart: 'Sun' | 'Mon') {
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
+  const rawFirstDay = new Date(year, month, 1).getDay(); // 0=Sun, 6=Sat
+  // If week starts Monday, shift: Sun(0) becomes 6, others shift back by 1
+  const firstDay = weekStart === 'Mon'
+    ? (rawFirstDay + 6) % 7
+    : rawFirstDay;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const cells = [];
@@ -102,7 +110,7 @@ function renderMiniGrid(monthDate: Date, events: any[]) {
     const hasEvents = events.some(e => e.startMs <= dayEnd && e.endMs >= dayStart);
 
     cells.push(
-      <div 
+      <div
         key={d}
         aria-hidden="true"
         className={`

@@ -247,7 +247,6 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
     <div tabIndex={-1}
          role="dialog"
          ref={formRef as React.RefObject<HTMLDivElement>}
-         aria-label={mode === 'add' ? 'Add event' : `Edit event: ${initialData?.title}`}
          className={`z-30 flex flex-col h-full shadow-xl border-l ${getAppColor('BG')} ${getAppColor('BORDER')}`}>
       {/* Header */}
       <div className={`p-4 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-950 ${getAppColor('BORDER')}`}>
@@ -259,8 +258,9 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
-        {/* Basic Info */}
+      <div aria-label={mode === 'add' ? 'Add event' : `Edit event: ${initialData?.title}`}
+           className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
+        {/* Title */}
         <div className="space-y-3">
           <input 
             className={`w-full font-bold bg-transparent border-b-2 outline-none pb-1 transition-all ${getAppColor('BORDER')} ${getAppColor('BORDER_FOCUS')} ${getTextClass(bigText)} focus-visible:!outline-none`}
@@ -269,6 +269,7 @@ export default function EventForm({ initialData, mode, onClose }: EventFormProps
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+          {/* Note */}
           <textarea 
             className={`w-full p-3 rounded outline-none border
                        ${getAppColor('BG_PANEL')} ${getAppColor('BORDER')} ${getAppColor('BORDER_FOCUS')} ${getTextClass(bigText)}`}
